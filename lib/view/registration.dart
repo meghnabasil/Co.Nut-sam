@@ -68,6 +68,7 @@ class _RegiState extends State<Regi> {
         iconTheme: IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
