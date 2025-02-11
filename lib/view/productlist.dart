@@ -12,6 +12,20 @@ class ProductDetail extends StatefulWidget {
 
 class _ProductDetailState extends State<ProductDetail> {
   String selectedOption = 'Retail';
+  bool isFavorite = false;
+  List<int> favoriteProducts = [];
+
+  void toggleFavorite() {
+    setState(() {
+      if (isFavorite) {
+        favoriteProducts.remove(widget.productIndex);
+      } else {
+        favoriteProducts.add(widget.productIndex);
+      }
+      isFavorite = !isFavorite;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +46,7 @@ class _ProductDetailState extends State<ProductDetail> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
-            SizedBox(height: 20),
+            SizedBox(height: 40),
 
             CarouselSlider(
               items: [
@@ -54,8 +68,26 @@ class _ProductDetailState extends State<ProductDetail> {
                 viewportFraction: 0.8,
               ),
             ),
-            const SizedBox(height: 60), // Space between Carousel and Divider
-            const Divider(thickness: 2, color: Colors.grey),
+            // Give space between the carousel and the favorite icon
+            SizedBox(height: 20),
+
+            // Place the favorite icon in a Row aligned to the right
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border_outlined,
+                    color: Colors.red,
+                    size: 30,
+                  ),
+                  onPressed: toggleFavorite,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20), // Space between Carousel and Divider
+            const Divider(thickness: 2, color: Colors.brown),
             const SizedBox(height: 10),
 
             SizedBox(height: 20),
@@ -67,11 +99,19 @@ class _ProductDetailState extends State<ProductDetail> {
             ),
 
             // Added description under the price box
-            SizedBox(height: 5),
-            Text(
-              'This price includes all applicable taxes and fees.Export ',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            SizedBox(height: 20),
+            Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'This price includes all applicable taxes and fees. Export',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ),
             ),
+
 
             SizedBox(height: 20),
             Card(
@@ -123,33 +163,47 @@ class _ProductDetailState extends State<ProductDetail> {
             ),
 
             SizedBox(height: 40),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF033015),
-                      foregroundColor: Color(0xFFFFFFFF),
+            Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF033015),
+                        foregroundColor: Color(0xFFFFFFFF),
+                      ),
+                      child: Text('Add to Cart'),
                     ),
-                    child: Text('Add to Cart'),
                   ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF033015),
-                      foregroundColor: Color(0xFFFFFFFF),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF033015),
+                        foregroundColor: Color(0xFFFFFFFF),
+                      ),
+                      child: Text('Buy'),
                     ),
-                    child: Text('Buy'),
                   ),
-                ),
+                ],
+              ),
+            ),
+            SizedBox(height: 80),
               ],
             ),
-          ],
-        ),
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Implement chat functionality
+        },
+        backgroundColor: Colors.grey,
+        child: Icon(Icons.chat, color:Color(0xFF033015)),
+        tooltip: 'Message us',
       ),
     );
   }

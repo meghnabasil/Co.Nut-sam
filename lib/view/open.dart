@@ -1,8 +1,8 @@
-import 'package:dup/bottomnav.dart';
-import 'package:dup/firstpage.dart';
-import 'package:dup/home.dart';
-import 'package:dup/login.dart';
-import 'package:dup/registration.dart';
+import 'package:dup/view/bottomnav.dart';
+import 'package:dup/view/firstpage.dart';
+import 'package:dup/view/home.dart';
+import 'package:dup/view/login.dart';
+import 'package:dup/view/registration.dart';
 import 'package:flutter/material.dart';
 
 class Open extends StatefulWidget {

@@ -13,7 +13,7 @@ class WorkersList extends StatelessWidget {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.all(20),
         itemCount: workerCount,
         itemBuilder: (context, index) {
           // Dynamically generate worker details based on the index.
@@ -32,7 +32,8 @@ class WorkersList extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              elevation: 5,
+              elevation: 8,
+              shadowColor: Colors.green,
               margin: EdgeInsets.symmetric(vertical: 8),
               child: Padding(
                 padding: const EdgeInsets.all(10.0),

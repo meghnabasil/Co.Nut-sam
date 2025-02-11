@@ -1,4 +1,4 @@
-import 'package:dup/Booking.dart';
+import 'package:dup/view/Booking.dart';
 import 'package:flutter/material.dart';
 
 class Doorsteps extends StatelessWidget {
@@ -11,7 +11,7 @@ class Doorsteps extends StatelessWidget {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.all(20),
         itemCount: 4, // Update this with actual service count
         itemBuilder: (context, index) {
           String serviceName = 'Service ${index + 1}';
@@ -20,10 +20,11 @@ class Doorsteps extends StatelessWidget {
 
           return Card(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(25),
             ),
-            elevation: 5,
-            margin: EdgeInsets.only(bottom: 10),
+            shadowColor: Colors.green,
+            elevation: 8,
+            margin: EdgeInsets.only(bottom: 25),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -58,7 +59,7 @@ class Doorsteps extends StatelessWidget {
                     '\$${price.toStringAsFixed(2)}',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 5),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -82,7 +83,7 @@ class Doorsteps extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.delivery_dining, color: Colors.white),
-                          SizedBox(width: 2),
+                          SizedBox(width: 10),
                           Text("Book your PickUp", style: TextStyle(color: Colors.white)),
                         ],
                       ),

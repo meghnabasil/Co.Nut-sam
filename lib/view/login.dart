@@ -1,8 +1,8 @@
-import 'package:dup/Home.dart';
-import 'package:dup/bottomnav.dart';
+import 'package:dup/view/Home.dart';
+import 'package:dup/view/bottomnav.dart';
 import 'package:flutter/material.dart';
-import 'package:dup/Forgotpass.dart';
-import 'package:dup/registration.dart';
+import 'package:dup/view/Forgotpass.dart';
+import 'package:dup/view/registration.dart';
 
 class UserForm extends StatefulWidget {
   const UserForm({super.key});
@@ -56,8 +56,9 @@ class _UserFormState extends State<UserForm> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 60),
               child: Center(
-                child: Text(
-                  'Co.Nut', // You can replace this with your app logo or name
+                child:
+                Text(
+                  '𝐂𝐨.𝐍𝐮𝐭', // You can replace this with your app logo or name
                   style: TextStyle(
                     fontSize: 50,
                     fontWeight: FontWeight.bold,
@@ -118,8 +119,8 @@ class _UserFormState extends State<UserForm> {
                             controller: _passwordController,
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: TextStyle(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                              labelStyle: TextStyle(color: Colors.white70,fontSize: 16),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.white70,),
                               suffix: IconButton(onPressed: () {
                                 setState(() {
                                   _passwordVisible = !_passwordVisible;
@@ -128,9 +129,10 @@ class _UserFormState extends State<UserForm> {
                               filled: true,
                               fillColor: Colors.black54,
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30.0),
+                                borderRadius: BorderRadius.circular(40.0),
                                 borderSide: BorderSide.none,
                               ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12)
                             ),
                             obscureText: !_passwordVisible,
                             keyboardType: TextInputType.visiblePassword,
@@ -189,7 +191,7 @@ class _UserFormState extends State<UserForm> {
                                 },
                                 child: const Text(
                                   "Sign Up Now",
-                                  style: TextStyle(color: Colors.green),
+                                  style: TextStyle(color: Color(0xFF033015),fontSize: 17),
                                 ),
                               ),
                             ],

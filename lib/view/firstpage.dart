@@ -1,15 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:dup/productlist.dart';
-
+import 'package:dup/view/productlist.dart';
 
 class Product extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Product Listing", style: TextStyle(color: Colors.white)),
-        backgroundColor:Color(0xFF033015),
+        backgroundColor: Color(0xFF033015),
         iconTheme: IconThemeData(color: Colors.white),
+        title: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white54,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search products...',
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(horizontal: 10),
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () {
+              // Add filter functionality here
+            },
+          ),
+        ],
       ),
       body: GridView.builder(
         padding: EdgeInsets.all(10),
@@ -35,9 +55,11 @@ class Product extends StatelessWidget {
             },
             child: Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 5,
+              elevation: 10,
+              shadowColor: Colors.green,
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -62,7 +84,7 @@ class Product extends StatelessWidget {
                         ),
                         Text(
                           'Company Name',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: TextStyle(color: Colors.black54),
                         ),
                         SizedBox(height: 5),
                         Text(

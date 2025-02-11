@@ -1,4 +1,4 @@
-import 'package:dup/Toollist.dart';
+import 'package:dup/view/Toollist.dart';
 import 'package:flutter/material.dart';
 
 class ListOfTools extends StatelessWidget {
@@ -31,7 +31,8 @@ class ListOfTools extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            elevation: 5,
+            shadowColor: Colors.green,
+            elevation: 8,
             child: InkWell(
               onTap: () {
                 // Navigate to a detail page for the tool.

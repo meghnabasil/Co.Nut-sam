@@ -1,10 +1,14 @@
-import 'package:dup/Favourites.dart';
-import 'package:dup/Tools.dart';
-import 'package:dup/firstpage.dart';
-import 'package:dup/onDoorstep.dart';
-import 'package:dup/profile.dart';
-import 'package:dup/subscription.dart';
-import 'package:dup/workerlist.dart';
+import 'package:dup/view/Favourites.dart';
+import 'package:dup/view/Tools.dart';
+import 'package:dup/view/Tools.dart';
+import 'package:dup/view/firstpage.dart';
+import 'package:dup/view/onDoorstep.dart';
+import 'package:dup/view/profile.dart';
+import 'package:dup/view/subscription.dart';
+import 'package:dup/view/onDoorstep.dart';
+import 'package:dup/view/subscription.dart';
+import 'package:dup/view/workerlist.dart';
+import 'package:dup/view/workerlist.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 

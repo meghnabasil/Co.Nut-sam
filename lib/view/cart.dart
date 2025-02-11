@@ -1,6 +1,7 @@
-import 'package:dup/Booking%20history.dart';
-import 'package:dup/Home.dart';
-import 'package:dup/bottomnav.dart';
+import 'package:dup/view/Booking_history.dart';
+import 'package:dup/view/Home.dart';
+import 'package:dup/view/Booking_history.dart';
+import 'package:dup/view/bottomnav.dart';
 import 'package:flutter/material.dart';
 
 class Cart extends StatefulWidget {

@@ -1,9 +1,10 @@
-import 'package:dup/cart.dart';
-import 'package:dup/chat.dart';
-import 'package:dup/profile.dart';
+import 'package:dup/view/cart.dart';
+import 'package:dup/view/chat.dart';
+import 'package:dup/view/profile.dart';
+import 'package:dup/view/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
-import 'Home.dart';
+import 'package:dup/view/home.dart';
 
 
 

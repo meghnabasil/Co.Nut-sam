@@ -1,7 +1,7 @@
-import 'package:dup/login.dart';
-import 'package:dup/open.dart';
+import 'package:dup/view/login.dart';
+import 'package:dup/view/open.dart';
 import 'package:flutter/material.dart';
-import 'package:dup/home.dart';
+import 'package:dup/view/home.dart';
 import 'package:lottie/lottie.dart';
 
 

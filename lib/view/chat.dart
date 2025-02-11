@@ -1,4 +1,4 @@
-import 'package:dup/bottomnav.dart';
+import 'package:dup/view/bottomnav.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatefulWidget {
