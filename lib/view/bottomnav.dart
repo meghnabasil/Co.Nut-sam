@@ -28,11 +28,11 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
 
 
 
-  final List<Widget> _pages = const [
+  final List<Widget> _pages =  [
     Home(),
     Cart(),
     Chat(),
-    Profile(),
+    ProfilePage(),
 
   ];
 

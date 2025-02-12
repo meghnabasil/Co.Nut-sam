@@ -28,22 +28,23 @@ class _SplashState extends State<Splash> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // body: Container(
-      //   width: double.infinity,
-      //   height: double.infinity,
-      //   decoration: BoxDecoration(
-      //     gradient: LinearGradient(colors: [Colors.white,Colors.green],
-      //       begin: Alignment.topRight,
-      //       end: Alignment.bottomRight,
-      //     ),
-      //
-      //   ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [Colors.white, Color(0xFF033015)],
+            begin: Alignment.topRight,
+            end: Alignment.bottomRight,
+          ),
 
-        body: Center(
+        ),
+
+        child:
+          Center(
           child:
           //Image.asset("asset/meg.jpeg"),
           Lottie.asset('asset/co..json'),
         ),
-      );
+      ),  );
     }
   }

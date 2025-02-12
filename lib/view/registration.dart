@@ -72,10 +72,12 @@ class _RegiState extends State<Regi> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Card(
-            elevation: 8, // Adds a shadow effect
+            elevation: 25, // Adds a shadow effect
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20.0),
             ),
+            shadowColor:Colors.green,
+            margin: EdgeInsets.only(bottom: 25),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Form(

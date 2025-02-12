@@ -1,122 +1,240 @@
-import 'package:dup/view/bottomnav.dart';
-import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/view/editprofile.dart';
+import 'package:dup/model/user_model.dart';
+import 'package:dup/view/venregistration.dart';
+import 'package:dup/view/workerRegistration.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-class Profile extends StatefulWidget {
-  const Profile({super.key});
-
+class ProfilePage extends StatefulWidget {
   @override
-  State<Profile> createState() => _ProfileState();
+  _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfileState extends State<Profile> {
-  // Sample user profile data
-  String name = "John Doe";
-  String email = "johndoe@example.com";
-  String address = "1234 Elm Street, Springfield, IL";
-  File? profileImage; // Store the profile picture if updated
+class _ProfilePageState extends State<ProfilePage> {
+  String name = "";
+  String email = "";
+  String profileImage = 'asset/210379377.png';
 
-  void _pickImage() async {
-    // Here you would implement the logic to pick an image from the gallery or camera
-    // For this demo, we'll assume we have the image picked already
+  bool isVendor = false; // Toggle state for Vendor
+  bool isWorker = false; // Toggle state for Worker
 
-    setState(() {
-      profileImage = File('path/to/your/image.jpg'); // This is just a placeholder
-    });
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        profileImage = pickedFile.path;
+      });
+    }
   }
 
-  void _updateProfile() {
-    // Navigate to another page or open a dialog to update the profile
-    print("Profile updated");
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
 
-    // In a real app, you would send the updated profile data to a backend or local storage
+  Future<void> _loadUserProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc =
+      await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+      if (userDoc.exists) {
+        UserModel userModel = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+        setState(() {
+          name = userModel.name;
+          email = userModel.email;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Color(0xFF033015),
+        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 100,
+        backgroundColor: const Color(0xFF033015),
         title: const Text(
           "Profile",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        leading: IconButton(
-            icon: Icon(Icons.home),
-            onPressed: () {
-              // Navigate back to HomeScreen
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => BottomBarScreen()),
-                    (route) => false,); // Removes all previous routes
-            }
-        ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,  // Aligns content to the top
-            crossAxisAlignment: CrossAxisAlignment.center,  // Centers content horizontally
-            children: [
-              // Profile Picture
-              GestureDetector(
-                onTap: _pickImage, // Pick an image when tapped
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: profileImage != null
-                      ? FileImage(profileImage!)
-                      : null,
-                  child: profileImage == null
-                      ? const Icon(Icons.camera_alt, size: 50, color: Colors.brown)
-                      : null,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Profile Picture
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(File(profileImage)),
+                    child: profileImage.isEmpty
+                        ? const Icon(Icons.camera_alt, color: Colors.white)
+                        : null,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-              // Displaying Name
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                // Name
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF033015),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-              // Displaying Email
-              Text(
-                email,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
+                // Email
+                Text(
+                  email,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 20),
 
-              // Displaying Address
-              Text(
-                address,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
+                // Edit Profile Button
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) => Editprofile()));
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color(0xFF033015)),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                  ),
+                  child: const Text('Edit Profile'),
                 ),
-              ),
-              const SizedBox(height: 24),
 
-              // Update Button
-              ElevatedButton(
-                onPressed: _updateProfile,
-                child: const Text('Update Profile'),
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Color(0xFF033015),),
-                  foregroundColor: MaterialStateProperty.all(Colors.white),
+                const SizedBox(height: 90),
+                const Divider(thickness: 2, color:  Color(0xFF033015)),
+
+                const SizedBox(height: 50),
+
+                // Vendor Registration Card
+                Card(
+                  elevation: 6,
+                  shadowColor: Colors.green,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  margin: const EdgeInsets.symmetric(horizontal: 30, vertical:5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Vendor Heading
+                        const Text(
+                          "Sell your products 🛒",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF033015),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // How to Choose Vendor
+                        const Text(
+                              "If you own a business selling coconut products like fresh coconuts, oil, coir, or snacks, register as a Vendor.",
+                          style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 15),
+
+                        // Toggle & Button for Vendor
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Switch to vendor", style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold)),
+                            Switch(
+                              value: isVendor,
+                              onChanged: (value) {
+                                setState(() {
+                                  isVendor = value;
+                                });
+                                if (value) {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => VendorRegisterScreen()));
+                                }
+                              },
+                              activeColor: Colors.green,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: 30),
+                // Worker Registration Card
+                Card(
+                  elevation: 6,
+                  shadowColor: Colors.green,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Worker Heading
+                        const Text(
+                          " Work and Earn 🔧",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF033015),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+
+                        // How to Choose Worker
+                        const Text(
+                              "If you're skilled in coconut-related work like farming, shell crafting, coir processing, or delivery, register as a Worker.",
+                          style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 15),
+
+                        // Toggle & Button for Worker
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Switch to Worker", style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                            Switch(
+                              value: isWorker,
+                              onChanged: (value) {
+                                setState(() {
+                                  isWorker = value;
+                                });
+                                if (value) {
+                                   Navigator.push(context, MaterialPageRoute(builder: (context) => AddWorkerScreen()));
+                                }
+                              },
+                              activeColor: Colors.green,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,6 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';  // Import Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import '../model/user_model.dart';
 
 class AuthController {
@@ -8,9 +7,11 @@ class AuthController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Register User
-  Future<String?> registerUser(String name, String email, String password) async {
+  Future<String?> registerUser(String name, String email,
+      String password) async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -19,9 +20,32 @@ class AuthController {
         uid: userCredential.user!.uid,
         name: name,
         email: email,
+        password: password,
       );
 
-      await _firestore.collection("users").doc(user.uid).set(user.toJson());
+      await _firestore.collection("users").doc(user.uid).set(user.toMap());
+
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
+  }
+
+
+//login
+  Future<String?> loginUser(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      DocumentSnapshot userDoc = await _firestore.collection("users").doc(
+          userCredential.user!.uid).get();
+
+      if (!userDoc.exists) {
+        return "User not found in database"; // Prevents unauthorized logins
+      }
 
       return null; // Success
     } on FirebaseAuthException catch (e) {

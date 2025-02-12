@@ -1,3 +1,4 @@
+import 'package:dup/controller/regi_controller.dart';
 import 'package:dup/view/Home.dart';
 import 'package:dup/view/bottomnav.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class _UserFormState extends State<UserForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool  _passwordVisible = false;
+  final AuthController _authController=AuthController();
 
   void dispose() {
     _emailController.dispose();
@@ -24,17 +26,23 @@ class _UserFormState extends State<UserForm> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Form submitted successfully"))
-      );
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BottomBarScreen(),));
+      String email=_emailController.text.trim();
+      String password=_passwordController.text.trim();
+      String? result= await _authController.loginUser(email, password);
 
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
+      if(result==null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("LogIn successfull"))
+        );
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => BottomBarScreen(),));
+      }
+      else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)),);
     }
-  }
+  }}
 
   @override
   Widget build(BuildContext context) {

@@ -92,7 +92,7 @@ class _HomeState extends State<Home> {
 body: ListView(
       children: [
         Padding(
-          padding: const EdgeInsets.all(7.0),
+          padding: const EdgeInsets.all(0.0),
           child: Image.asset(
             'asset/banner.jpeg',
             width: double.infinity,  // Image will take full width
@@ -100,19 +100,32 @@ body: ListView(
             fit: BoxFit.cover,  // Adjust fit as needed
           ),
         ),
-        const SizedBox(height: 10), // Space between Carousel and Divider
-        const Divider(thickness: 2, color: Colors.grey),
-        const SizedBox(height: 10),
+
         // Card Grid
-          const SizedBox(height: 10),
+
+
+          const SizedBox(height: 50),
+        const Text(
+          "Go Natural. Go Co.Nut! 🥥",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20,
+
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF033015),
+          ),
+        ),
+
+
+        const SizedBox(height: 40),
           CarouselSlider(
             options: CarouselOptions(
               height: 200,
               autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 3), // Adjust time (e.g., 3 seconds)
+              autoPlayInterval: const Duration(seconds: 23), // Adjust time (e.g., 3 seconds)
               enlargeCenterPage: true,
               aspectRatio: 16 / 9,
-              viewportFraction: 0.8,
+              viewportFraction: 0.9,
             ),
             items: carouselImages.map((imagePath) {
               return ClipRRect(
@@ -125,6 +138,10 @@ body: ListView(
               );
             }).toList(),
           ),
+        // const SizedBox(height: 70),
+
+        const SizedBox(height: 70), // Space between Carousel and Divider
+        const Divider(thickness: 2, color:  Color(0xFF033015)),
         const SizedBox(height: 70),
 
         // Subscription and Favorite Buttons
@@ -133,7 +150,7 @@ body: ListView(
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(45),
               gradient: LinearGradient(
                 colors: [Colors.grey, Colors.grey], // Background gradient
                 begin: Alignment.topLeft,
@@ -201,7 +218,44 @@ body: ListView(
           ),
         ),
 
-        const SizedBox(height: 60),
+        const SizedBox(height: 80),
+
+        const SizedBox(height: 10),
+        const Text(
+          "Experience the Magic of Coconuts ",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 15,
+
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF033015),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 200,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 3), // Adjust time (e.g., 3 seconds)
+            enlargeCenterPage: true,
+            aspectRatio: 16 / 9,
+            viewportFraction: 0.5,
+          ),
+          items: carouselImages.map((imagePath) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: Image.asset(
+                imagePath,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 70),
 
 
         // Caption Text
@@ -219,7 +273,7 @@ body: ListView(
         ),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: GridView.count(
@@ -236,7 +290,9 @@ body: ListView(
               ],
             ),
           ),
+
         ],
+
       ),
 
    );
@@ -274,5 +330,6 @@ body: ListView(
         ),
       ),
     );
+
   }
 }
