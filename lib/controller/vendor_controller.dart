@@ -28,7 +28,7 @@ class VendorController {
         businessModel: businessModel,
       );
 
-      await _firestore.collection("vendors").doc(user.uid).set(vendor.toMap());
+      await _firestore.collection("vendors").add(vendor.toMap());
 
       return null; // Success
     } on FirebaseAuthException catch (e) {

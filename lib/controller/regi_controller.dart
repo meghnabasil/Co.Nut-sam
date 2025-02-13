@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/user_model.dart';
+import 'package:dup/controller/session.dart';
+
 
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -40,13 +42,17 @@ class AuthController {
         password: password,
       );
 
+
+      String userId = userCredential.user!.uid;
+
       DocumentSnapshot userDoc = await _firestore.collection("users").doc(
           userCredential.user!.uid).get();
 
-      if (!userDoc.exists) {
-        return "User not found in database"; // Prevents unauthorized logins
-      }
 
+      if (!userDoc.exists) {
+        return "User not found"; // Prevents unauthorized logins
+      }
+      await Session.saveSession(email, userId);
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message

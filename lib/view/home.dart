@@ -2,6 +2,7 @@ import 'package:dup/view/Favourites.dart';
 import 'package:dup/view/Tools.dart';
 import 'package:dup/view/Tools.dart';
 import 'package:dup/view/firstpage.dart';
+import 'package:dup/view/login.dart';
 import 'package:dup/view/onDoorstep.dart';
 import 'package:dup/view/profile.dart';
 import 'package:dup/view/subscription.dart';
@@ -9,8 +10,11 @@ import 'package:dup/view/onDoorstep.dart';
 import 'package:dup/view/subscription.dart';
 import 'package:dup/view/workerlist.dart';
 import 'package:dup/view/workerlist.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+
+import 'package:dup/controller/session.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,6 +24,25 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String _userName="User name";
+  String _userEmail="user@gmail.com";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserSession();
+  }
+
+
+  Future<void> _loadUserSession() async {
+    Map<String, dynamic>? userDetails = await Session.getUserDetails();
+
+    setState(() {
+      _userName = userDetails?['name'] ;
+      _userEmail = userDetails?['email'] ;
+    });
+  }
+
 
 
   final List<String> carouselImages = [
@@ -52,8 +75,8 @@ class _HomeState extends State<Home> {
         child: ListView(
           children: [
             UserAccountsDrawerHeader(
-              accountName: const Text('Meghna Basil PT'),
-              accountEmail: const Text('meghnabasil2001@gmail.com'),
+              accountName: Text(_userName!),
+              accountEmail:Text(_userEmail!),
               currentAccountPicture: const CircleAvatar(
                 backgroundImage: AssetImage("assets/profile.jpg"),
               ),
@@ -80,12 +103,28 @@ class _HomeState extends State<Home> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.black), // Change icon color
+              leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text("Log Out"),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: ()  async {
+                try {
+                  await FirebaseAuth.instance.signOut(); // Logs out from Firebase
+                  await Session.clearSession(); // Clears SharedPreferences session
+
+                  // Navigate to login screen and remove all previous screens
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserForm()),
+                        (route) => false,
+                  );
+                } catch (e) {
+                  print("Logout error: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Logout failed! Please try again.")),
+                  );
+                }
+              }, // Call logout function
             ),
+
           ],
         ),
       ),

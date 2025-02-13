@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   @override
@@ -16,21 +14,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   String description = '';
   String phone = '';
   String city = '';
-  String workType = 'Farming'; // Default dropdown value
-  File? workerPhoto;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  /// Pick Image from Gallery
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        workerPhoto = File(pickedFile.path);
-      });
-    }
-  }
 
   /// Add Worker to Firebase
   Future<void> _addWorker() async {
@@ -44,7 +29,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
           'description': description,
           'phone': phone,
           'city': city,
-          // 'workType': workType,
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -72,17 +56,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Profile Photo Upload
-              GestureDetector(
-                onTap: _pickImage,
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: workerPhoto != null ? FileImage(workerPhoto!) : null,
-                  child: workerPhoto == null ? Icon(Icons.camera_alt, size: 40) : null,
-                ),
-              ),
-              SizedBox(height: 10),
-
               // Worker Name
               TextFormField(
                 decoration: InputDecoration(labelText: 'Worker Name'),
@@ -119,16 +92,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                 validator: (value) => value!.isEmpty ? "Enter city name" : null,
                 onSaved: (value) => city = value!,
               ),
-
-              // Work Type Dropdown
-              // DropdownButtonFormField(
-              //   value: workType,
-              //   items: ['Farming', 'Processing', 'Delivery', 'Coir Making', 'Other']
-              //       .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-              //       .toList(),
-              //   onChanged: (value) => setState(() => workType = value as String),
-              //   decoration: InputDecoration(labelText: 'Work Type'),
-              // ),
 
               SizedBox(height: 20),
 
