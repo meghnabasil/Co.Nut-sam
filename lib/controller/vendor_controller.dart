@@ -7,8 +7,10 @@ class VendorController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Register Vendor with Existing User UID
-  Future<String?> registerVendor(String businessName, String phone, String address,
-      String city, String businessType, String productCategory, List<String> businessModel) async {
+  Future<String?> registerVendor(String businessName, String phone,
+      String address,
+      String city, String businessType, String productCategory,
+      List<String> businessModel) async {
     try {
       // Get the currently logged-in user's UID
       User? user = _auth.currentUser;
@@ -17,12 +19,13 @@ class VendorController {
       }
 
       Vendor vendor = Vendor(
-        uid: user.uid, // Using the same user ID
+        uid: user.uid,
+        // Using the same user ID
         businessName: businessName,
         email: user.email!,
         phone: phone,
         address: address,
-         city: city,
+        city: city,
         businessType: businessType,
         productCategory: productCategory,
         businessModel: businessModel,

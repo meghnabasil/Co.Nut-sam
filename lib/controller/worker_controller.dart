@@ -3,36 +3,51 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../model/worker_model.dart';
 
 class WorkerController {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// **Register the logged-in user as a worker**
-  Future<String?> registerWorker(String jobTitle, String description,
-      String city, String phone) async {
+  /// Register Worker with Existing User UID
+  Future<String?> registerWorker(String workerName, String jobTitle, String phone, String city, String description) async {
     try {
-      // Get the logged-in user's details
+      // Get the currently logged-in user's UID
       User? user = _auth.currentUser;
       if (user == null) {
         return "User not logged in";
       }
 
       Worker worker = Worker(
-        uid: user.uid,
-        // Use the same Firebase UID
-        workerName: user.displayName ?? '',
-        // Fetch user name
-        phone: phone,
+        uid: user.uid, // Using the same user ID
+        workerName: workerName,
         jobTitle: jobTitle,
-        description: description,
+        phone: phone,
         city: city,
+        description: description,
       );
 
-      // Store worker details in Firestore under the user's UID
-      await _firestore.collection('workers').add(worker.toMap());
+      await _firestore.collection("workers").add(worker.toMap());
 
       return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
+  }
+
+  Future<Worker?> fetchWorkerData() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        return null;
+      }
+
+      DocumentSnapshot workerDoc = await _firestore.collection("workers").doc(user.uid).get();
+
+      if (workerDoc.exists) {
+        return Worker.fromMap(workerDoc.data() as Map<String, dynamic>);
+      }
+      return null;
     } catch (e) {
-      return e.toString(); // Return error message
+      print("Error fetching worker data: $e");
+      return null;
     }
   }
 }

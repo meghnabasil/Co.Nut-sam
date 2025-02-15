@@ -53,6 +53,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  String getActiveStatus() {
+    if (isVendor) {
+      return "Active as Vendor";
+    } else if (isWorker) {
+      return "Active as Worker";
+    } else {
+      return "Hello Customers";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,6 +132,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Text('Edit Profile'),
                 ),
 
+                const SizedBox(height: 10),
+
+                // Active Status Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Text(
+                    getActiveStatus(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
                 const SizedBox(height: 90),
                 const Divider(thickness: 2, color:  Color(0xFF033015)),
 
@@ -151,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         // How to Choose Vendor
                         const Text(
-                              "If you own a business selling coconut products like fresh coconuts, oil, coir, or snacks, register as a Vendor.",
+                          "If you own a business selling coconut products like fresh coconuts, oil, coir, or snacks, register as a Vendor.",
                           style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
                         ),
                         const SizedBox(height: 15),
@@ -166,6 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               onChanged: (value) {
                                 setState(() {
                                   isVendor = value;
+                                  isWorker = false; // Disable Worker if Vendor is selected
                                 });
                                 if (value) {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => VendorRegisterScreen()));
@@ -205,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         // How to Choose Worker
                         const Text(
-                              "If you're skilled in coconut-related work like farming, shell crafting, coir processing, or delivery, register as a Worker.",
+                          "If you're skilled in coconut-related work like farming, shell crafting, coir processing, or delivery, register as a Worker.",
                           style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
                         ),
                         const SizedBox(height: 15),
@@ -220,9 +252,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               onChanged: (value) {
                                 setState(() {
                                   isWorker = value;
+                                  isVendor = false; // Disable Vendor if Worker is selected
                                 });
                                 if (value) {
-                                   Navigator.push(context, MaterialPageRoute(builder: (context) => AddWorkerScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddWorkerScreen()));
                                 }
                               },
                               activeColor: Colors.green,

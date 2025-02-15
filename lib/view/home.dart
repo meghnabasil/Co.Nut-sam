@@ -143,7 +143,7 @@ body: ListView(
         // Card Grid
 
 
-          const SizedBox(height: 50),
+          const SizedBox(height: 35),
         const Text(
           "Go Natural. Go Co.Nut! 🥥",
           textAlign: TextAlign.center,
@@ -156,7 +156,7 @@ body: ListView(
         ),
 
 
-        const SizedBox(height: 40),
+        const SizedBox(height: 35),
           CarouselSlider(
             options: CarouselOptions(
               height: 200,
@@ -179,11 +179,143 @@ body: ListView(
           ),
         // const SizedBox(height: 70),
 
-        const SizedBox(height: 70), // Space between Carousel and Divider
-        const Divider(thickness: 2, color:  Color(0xFF033015)),
+        const SizedBox(height: 50), // Space bet// ween Carousel and Divider
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildButton('Worker', WorkersList()),
+              _buildButton('Sell', Subscription()),
+              _buildButton('Products', Doorsteps()),
+            ],
+          ),
+        ),
+
+        // subscribe now
+
+
+        const SizedBox(height: 30),
+
+
+
+
+        const SizedBox(height: 10),
+
+    Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+    child: Text(
+          "Experience the Magic of Coconuts ",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF033015),
+          ),
+        ),
+    ),
+        const SizedBox(height: 20),
+
+
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 200,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 3), // Adjust time (e.g., 3 seconds)
+            enlargeCenterPage: true,
+            aspectRatio: 16 / 9,
+            viewportFraction: 0.5,
+          ),
+          items: carouselImages.map((imagePath) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: Image.asset(
+                imagePath,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            );
+          }).toList(),
+        ),
         const SizedBox(height: 70),
 
-        // Subscription and Favorite Buttons
+        // Clickable Subscribe Card
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Subscription()),
+              );
+            },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: 5,
+              child: Container(
+                padding: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Color(0xFF033015),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock_clock, color: Colors.white, size: 30),
+                    SizedBox(width: 10),
+                    Text(
+                      'Subscribe Now',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+
+      const SizedBox(height: 45),
+        // Caption Text
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            child: Text(
+            'Explore Our Best Picks!',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color:Colors.black87,
+            ),
+          ),
+        ),
+
+
+        const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              crossAxisSpacing: 50,
+              mainAxisSpacing: 50,
+              childAspectRatio: 1.0,
+              children: [
+                _buildCard(context, 'Coco Products', 'asset/all.webp',  Product()),
+                _buildCard(context, 'Workers', 'asset/work.webp', WorkersList()),
+                _buildCard(context, 'On Doorstep', 'asset/delivery.webp', Doorsteps()),
+                _buildCard(context, 'Tools', 'asset/mach.webp', ListOfTools()),
+              ],
+            ),
+          ),
+
+        const SizedBox(height: 65),
+        //subscrption history and favourits
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1.0),
           child: Container(
@@ -217,15 +349,15 @@ body: ListView(
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Subscription()),);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF260e04), // Button color
-                    foregroundColor: Colors.white, // Text color
+                    backgroundColor:Colors.white, // Button color
+                    foregroundColor:Color(0xFF033015), // Text color
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(35),
                     ),
                     elevation: 5, // Button shadow
                   ),
-                  icon: Icon(Icons.star, color: Colors.white), // Subscription icon
+                  icon: Icon(Icons.star, color: Color(0xFF033015)), // Subscription icon
                   label: const Text(
                     "Subscriptions",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
@@ -238,15 +370,15 @@ body: ListView(
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Favourites()),);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF260e04), // Button color
-                    foregroundColor: Colors.white, // Text color
+                    backgroundColor: Colors.white, // Button color
+                    foregroundColor: Color(0xFF033015), // Text color
                     padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(35),
                     ),
                     elevation: 5, // Button shadow
                   ),
-                  icon: Icon(Icons.favorite, color: Colors.white), // Favorite icon
+                  icon: Icon(Icons.favorite, color: Color(0xFF033015)), // Favorite icon
                   label: const Text(
                     "Favourites",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
@@ -259,83 +391,35 @@ body: ListView(
 
         const SizedBox(height: 80),
 
-        const SizedBox(height: 10),
-        const Text(
-          "Experience the Magic of Coconuts ",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 15,
-
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF033015),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-
-        CarouselSlider(
-          options: CarouselOptions(
-            height: 200,
-            autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 3), // Adjust time (e.g., 3 seconds)
-            enlargeCenterPage: true,
-            aspectRatio: 16 / 9,
-            viewportFraction: 0.5,
-          ),
-          items: carouselImages.map((imagePath) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(13),
-              child: Image.asset(
-                imagePath,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 70),
-
-
-        // Caption Text
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-        child: Center(
-            child: Text(
-            'Explore Our Best Picks!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color:Colors.black87,
-            ),
-          ),
-        ),
-        ),
-
-        const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 2,
-              crossAxisSpacing: 50,
-              mainAxisSpacing: 50,
-              childAspectRatio: 1.0,
-              children: [
-                _buildCard(context, 'Coco Products', 'asset/all.webp',  Product()),
-                _buildCard(context, 'Workers', 'asset/work.webp', WorkersList()),
-                _buildCard(context, 'On Doorstep', 'asset/delivery.webp', Doorsteps()),
-                _buildCard(context, 'Tools', 'asset/mach.webp', ListOfTools()),
-              ],
-            ),
-          ),
-
         ],
 
       ),
 
    );
    }
+
+  Widget _buildButton(String text, Widget page) {
+    return GestureDetector(
+      onTap: () => _navigateToPage(context, page),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xFF033015), width: 2),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ),  );
+  }
+
+
+
 
   Widget _buildCard(BuildContext context, String title, String imagePath, Widget page) {
     return GestureDetector(

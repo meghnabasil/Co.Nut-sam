@@ -1,3 +1,4 @@
+import 'package:dup/view/History.dart';
 import 'package:dup/view/cart.dart';
 import 'package:dup/view/chat.dart';
 import 'package:dup/view/profile.dart';
@@ -32,6 +33,7 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
     Home(),
     Cart(),
     Chat(),
+    History(),
     ProfilePage(),
 
   ];
@@ -82,6 +84,8 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
 
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'history'),
 
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
 

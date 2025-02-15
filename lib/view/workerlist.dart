@@ -21,12 +21,79 @@ class WorkersList extends StatelessWidget {
           final String jobTitle = "Job Title ${index + 1}";
           final String details =
               " This worker has years of experience in their field.";
-          final String contact = "worker${index + 1}@example.com";
+         final String city = "city";
 
           return GestureDetector(
             onTap: () {
-              // Optionally, navigate to a detailed worker profile page.
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => WorkerDetail(worker: {...})));
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            workerName,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            jobTitle,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 9),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              details,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ),
+                          SizedBox(height: 9),
+                          Text("city: city"),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                // Add call functionality here.
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF033015),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.phone, color: Colors.white),
+                                  SizedBox(width: 7),
+                                  Text("Call", style: TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
             },
             child: Card(
               shape: RoundedRectangleBorder(

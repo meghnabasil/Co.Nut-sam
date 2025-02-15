@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../controller/worker_controller.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   @override
@@ -8,6 +8,7 @@ class AddWorkerScreen extends StatefulWidget {
 
 class _AddWorkerScreenState extends State<AddWorkerScreen> {
   final _formKey = GlobalKey<FormState>();
+  final WorkerController _workerController = WorkerController();
 
   String workerName = '';
   String jobTitle = '';
@@ -15,32 +16,27 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   String phone = '';
   String city = '';
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  /// Add Worker to Firebase
-  Future<void> _addWorker() async {
+  /// Save Worker Data
+  Future<void> _saveWorker() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      try {
-        await _firestore.collection('workers').add({
-          'workerName': workerName,
-          'jobTitle': jobTitle,
-          'description': description,
-          'phone': phone,
-          'city': city,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+      String? errorMessage = await _workerController.registerWorker(
+        workerName,
+        jobTitle,
+        phone,
+        city,
+        description,
+      );
 
+      if (errorMessage == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Worker Added Successfully!')),
+          SnackBar(content: Text('Worker Registered Successfully!')),
         );
-
         Navigator.pop(context);
-      } catch (e) {
-        print("Error: $e");
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(content: Text(errorMessage)),
         );
       }
     }
@@ -49,7 +45,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add Worker"), backgroundColor: Color(0xFF033015)),
+      appBar: AppBar(title: Text("Worker Registration"), backgroundColor: Color(0xFF033015)),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Form(
@@ -70,14 +66,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                 onSaved: (value) => jobTitle = value!,
               ),
 
-              // Job Description
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-                validator: (value) => value!.isEmpty ? "Enter job description" : null,
-                onSaved: (value) => description = value!,
-              ),
-
               // Phone
               TextFormField(
                 decoration: InputDecoration(labelText: 'Phone Number'),
@@ -93,13 +81,24 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                 onSaved: (value) => city = value!,
               ),
 
+              // Description
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Description'),
+                maxLines: 4,
+                validator: (value) => value!.isEmpty ? "Enter a description" : null,
+                onSaved: (value) => description = value!,
+              ),
+
               SizedBox(height: 20),
 
-              // Add Worker Button
+              // Register Button
               ElevatedButton(
-                onPressed: _addWorker,
-                child: Text("Add Worker"),
-                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                onPressed: _saveWorker,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(const Color(0xFF033015)),
+                  foregroundColor: MaterialStateProperty.all(Colors.white),
+                ),
+                child: const Text('Register'),
               ),
             ],
           ),
