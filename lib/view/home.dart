@@ -53,6 +53,14 @@ class _HomeState extends State<Home> {
   ];
 
 
+  final List<String> companyLogos = [
+    'asset/nut.jpg',
+    'asset/nut.jpg',
+    'asset/nut.jpg',
+    'asset/nut.jpg',
+
+  ];
+
 
   void _navigateToPage(BuildContext context, Widget page) {
     Navigator.push(context, MaterialPageRoute(builder: (context) => page));
@@ -69,6 +77,14 @@ class _HomeState extends State<Home> {
         title:Image.asset('asset/img.png',height: 25,),
         // title: Image.asset('asset/image.png',height: 25,),
           centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_active_outlined),
+            onPressed: () {
+              // Handle notification click
+            },
+          ),
+        ],
       ),
 
       drawer: Drawer(
@@ -141,11 +157,29 @@ body: SingleChildScrollView(
             fit: BoxFit.cover,  // Adjust fit as needed
           ),
         ),
+        const SizedBox(height: 35),
+         Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: CarouselSlider(
+                        options: CarouselOptions(
+                          height: 50,
+                          autoPlay: true,
+                          autoPlayInterval: Duration(seconds: 2),
+                          viewportFraction: 0.3,
+                          enlargeCenterPage: false,
+                          scrollDirection: Axis.horizontal,
+                        ),
+                        items: companyLogos.map((logo) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                            child: Image.asset(logo, height: 50),
+                          );
+                        }).toList(),
+                      ),
+                    ),
 
-        // Card Grid
 
-
-          const SizedBox(height: 35),
+        const SizedBox(height: 35),
         const Text(
           "Go Natural. Go Co.Nut! 🥥",
           textAlign: TextAlign.center,
@@ -198,12 +232,7 @@ body: SingleChildScrollView(
         // subscribe now
 
 
-        const SizedBox(height: 30),
-
-
-
-
-        const SizedBox(height: 10),
+        const SizedBox(height: 40),
 
     Padding(
     padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -261,10 +290,16 @@ body: SingleChildScrollView(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   color: Color(0xFF033015),
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF033015), Colors.grey], // Background gradient
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+
                     Icon(Icons.lock_clock, color: Colors.white, size: 30),
                     SizedBox(width: 10),
                     Text(

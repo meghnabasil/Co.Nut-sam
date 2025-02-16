@@ -1,5 +1,7 @@
 import 'package:dup/controller/vendor_controller.dart';
 import 'package:dup/view/CompanyDetail.dart';
+import 'package:dup/view/chat.dart';
+import 'package:dup/view/chatdetailscreen.dart';
 import 'package:dup/view/international.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -290,7 +292,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement chat functionality
+       //  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen({super.key, required this.name}),));
         },
         backgroundColor: Colors.grey,
         child: Icon(Icons.chat, color:Color(0xFF033015)),
