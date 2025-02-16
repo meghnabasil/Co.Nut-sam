@@ -30,12 +30,12 @@ class Worker {
   // Create Worker object from Firebase document
   factory Worker.fromMap(Map<String, dynamic> map) {
     return Worker(
-      uid: map['uid'], // Retrieve UID
-      workerName: map['workerName'],
-      jobTitle: map['jobTitle'],
-      phone: map['phone'],
-      city: map['city'],
-      description: map['description'],
+        uid: map['uid'] ?? '', // Provide default value
+        workerName: map['workerName'] ?? 'Unknown',
+        jobTitle: map['jobTitle'] ?? 'Unknown',
+        phone: map['phone'] ?? 'Unknown',
+        city: map['city'] ?? 'Unknown',
+        description: map['description'] ?? 'No description',
     );
   }
 }

@@ -1,11 +1,12 @@
 import 'package:dup/view/History.dart';
+import 'package:dup/view/Home.dart';
 import 'package:dup/view/cart.dart';
 import 'package:dup/view/chat.dart';
 import 'package:dup/view/profile.dart';
-import 'package:dup/view/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:dup/view/home.dart';
+
+
+
 
 
 

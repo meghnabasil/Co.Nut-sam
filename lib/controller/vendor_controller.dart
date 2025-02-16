@@ -38,4 +38,26 @@ class VendorController {
       return e.message; // Return error message
     }
   }
+
+  /// Fetch Vendor Details
+  Future<Vendor?> fetchVendorDetails() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        return null;
+      }
+
+      DocumentSnapshot vendorDoc =
+      await _firestore.collection("vendors").doc(user.uid).get();
+
+      if (vendorDoc.exists) {
+        return Vendor.fromMap(vendorDoc.data() as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching vendor details: $e");
+      return null;
+    }
+  }
 }

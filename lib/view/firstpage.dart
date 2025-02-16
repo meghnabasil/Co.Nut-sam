@@ -49,6 +49,7 @@ class Product extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => ProductDetail(
                     productIndex: index,
+                    vendorId: "vendorId",
                   ),
                 ),
               );

@@ -1,10 +1,14 @@
+import 'package:dup/controller/vendor_controller.dart';
+import 'package:dup/view/CompanyDetail.dart';
+import 'package:dup/view/international.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class ProductDetail extends StatefulWidget {
   final int productIndex;
+  final String vendorId;
 
-  ProductDetail({required this.productIndex});
+  ProductDetail({required this.productIndex,required this.vendorId});
 
   @override
   _ProductDetailState createState() => _ProductDetailState();
@@ -14,6 +18,17 @@ class _ProductDetailState extends State<ProductDetail> {
   String selectedOption = 'Retail';
   bool isFavorite = false;
   List<int> favoriteProducts = [];
+  int quantity = 1;
+
+// to show company detail
+  void showCompanyDetailsPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CompanyDetail(vendorId: widget.vendorId); // Pass vendor ID to popup
+      },
+    );
+  }
 
   void toggleFavorite() {
     setState(() {
@@ -24,6 +39,55 @@ class _ProductDetailState extends State<ProductDetail> {
       }
       isFavorite = !isFavorite;
     });
+  }
+
+
+
+  void showWholesalePopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[400],
+          title: Text("Select Wholesale Type",style:TextStyle(fontSize: 15),),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text("Local"),
+                leading: Radio(
+                  value: 'Local',
+                  groupValue: selectedOption,
+                  onChanged: (value) {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => International()),
+                    );
+                  },
+                ),
+              ),
+              ListTile(
+                title: Text("International"),
+                leading: Radio(
+                  value: 'International',
+                  groupValue: selectedOption,
+                  onChanged: (value) {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => International()),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
 
@@ -91,7 +155,10 @@ class _ProductDetailState extends State<ProductDetail> {
             const SizedBox(height: 10),
 
             SizedBox(height: 20),
-            Text('Company Name', style: TextStyle(color: Colors.grey[600])),
+            GestureDetector(
+              onTap:showCompanyDetailsPopup,
+              child: Text('Company Name', style: TextStyle(fontWeight:FontWeight.bold,color: Colors.black, decoration: TextDecoration.underline)),
+            ),
             SizedBox(height: 10),
             Text(
               '₹${(widget.productIndex + 1) * 20}',
@@ -111,7 +178,30 @@ class _ProductDetailState extends State<ProductDetail> {
                 ),
               ),
             ),
-
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Text("Quantity: ", style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () {
+                    setState(() {
+                      if (quantity > 1) quantity--;
+                    });
+                  },
+                ),
+                Text(quantity.toString(), style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      quantity++;
+                    });
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 40),
 
             SizedBox(height: 20),
             Card(
@@ -145,13 +235,14 @@ class _ProductDetailState extends State<ProductDetail> {
                           child: ListTile(
                             title: Text('Wholesale'),
                             leading: Radio(
-                              value: 'Wholesale',
-                              groupValue: selectedOption,
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedOption = value.toString();
-                                });
-                              },
+                                value: 'Wholesale',
+                                groupValue: selectedOption,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedOption = value.toString();
+                                    showWholesalePopup();
+                                  });
+                                },
                             ),
                           ),
                         ),

@@ -8,6 +8,7 @@ import 'package:dup/view/profile.dart';
 import 'package:dup/view/subscription.dart';
 import 'package:dup/view/onDoorstep.dart';
 import 'package:dup/view/subscription.dart';
+import 'package:dup/view/vendor_home.dart';
 import 'package:dup/view/workerlist.dart';
 import 'package:dup/view/workerlist.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -128,7 +129,8 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-body: ListView(
+body: SingleChildScrollView(
+    child: Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(0.0),
@@ -188,7 +190,7 @@ body: ListView(
             children: [
               _buildButton('Worker', WorkersList()),
               _buildButton('Sell', Subscription()),
-              _buildButton('Products', Doorsteps()),
+              _buildButton('Products', VendorDashboard()),
             ],
           ),
         ),
@@ -323,7 +325,7 @@ body: ListView(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(45),
               gradient: LinearGradient(
-                colors: [Colors.grey, Colors.grey], // Background gradient
+                colors: [Color(0xFF033015), Colors.grey], // Background gradient
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -367,7 +369,7 @@ body: ListView(
                 // Favorite Button with Icon
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Favourites()),);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Subscription()),);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white, // Button color
@@ -387,16 +389,17 @@ body: ListView(
               ],
             ),
           ),
-        ),
+),
 
         const SizedBox(height: 80),
 
-        ],
+      ],
+    ),
+),
+    );
+  }
 
-      ),
 
-   );
-   }
 
   Widget _buildButton(String text, Widget page) {
     return GestureDetector(
@@ -417,7 +420,6 @@ body: ListView(
         ),
       ),  );
   }
-
 
 
 

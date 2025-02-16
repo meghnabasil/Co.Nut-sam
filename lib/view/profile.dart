@@ -68,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         backgroundColor: const Color(0xFF033015),
         title: const Text(
           "Profile",
@@ -132,11 +132,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Text('Edit Profile'),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 50),
 
                 // Active Status Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 90),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -153,11 +153,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
 
-                const SizedBox(height: 90),
+                const SizedBox(height: 45),
                 const Divider(thickness: 2, color:  Color(0xFF033015)),
 
                 const SizedBox(height: 50),
-
+               Card(
+                color: Color(0xFF033015),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: Padding(
+                padding: const EdgeInsets.all(16.0),
+               child: Column(
+               children: [
                 // Vendor Registration Card
                 Card(
                   elevation: 6,
@@ -270,7 +276,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
+      ],),
+    ),
       ),
+    ),
     );
   }
 }

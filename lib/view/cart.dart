@@ -29,7 +29,7 @@ class _CartState extends State<Cart> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Cart"),
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFF033015),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -80,7 +80,7 @@ class _CartState extends State<Cart> {
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Color(0xFF033015),
                 padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 50.0),
               ),
               child: Text("Proceed To Check-Out", style: TextStyle(fontSize: 18, color: Colors.white)),
