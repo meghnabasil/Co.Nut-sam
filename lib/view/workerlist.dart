@@ -21,19 +21,25 @@ class _WorkersListState extends State<WorkersList> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
-              decoration: InputDecoration(
-                labelText: "Search Workers",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
+          Card(
+            elevation: 15,
+            shadowColor: Colors.green,
+            margin: EdgeInsets.all(10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: "Search Workers,job,location",
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none, // Removes the default border
                 ),
               ),
             ),
@@ -54,8 +60,12 @@ class _WorkersListState extends State<WorkersList> {
                   return Worker.fromMap(data);
                 }).where((worker) {
                   return worker.workerName.toLowerCase().contains(searchQuery) ||
-                      worker.jobTitle.toLowerCase().contains(searchQuery);
+                      worker.jobTitle.toLowerCase().contains(searchQuery) ||
+                      worker.city.toLowerCase().contains(searchQuery); // Added city filter
                 }).toList();
+
+
+
 
                 return ListView.builder(
                   padding: EdgeInsets.all(20),

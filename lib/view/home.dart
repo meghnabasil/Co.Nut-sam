@@ -158,25 +158,28 @@ body: SingleChildScrollView(
           ),
         ),
         const SizedBox(height: 35),
-         Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0),
-                      child: CarouselSlider(
-                        options: CarouselOptions(
-                          height: 50,
-                          autoPlay: true,
-                          autoPlayInterval: Duration(seconds: 2),
-                          viewportFraction: 0.3,
-                          enlargeCenterPage: false,
-                          scrollDirection: Axis.horizontal,
-                        ),
-                        items: companyLogos.map((logo) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Image.asset(logo, height: 50),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          child: CarouselSlider(
+            options: CarouselOptions(
+              height: 50,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 2),
+              viewportFraction: 0.3,
+              enlargeCenterPage: false,
+              scrollDirection: Axis.horizontal,
+            ),
+            items: companyLogos.map((logo) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10), //  Rounded edges added
+                  child: Image.asset(logo, height: 50, fit: BoxFit.cover),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
 
 
         const SizedBox(height: 35),

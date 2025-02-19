@@ -1,106 +1,79 @@
+import 'package:dup/view/productlist.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Subscription extends StatelessWidget {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class Subscription extends StatefulWidget {
+  @override
+  _SubscriptionState createState() => _SubscriptionState();
+}
+
+class _SubscriptionState extends State<Subscription> {
+  // Map to store product types for each vendor
+  final Map<String, String> vendorProductTypes = {
+    "Coconut Haven": "Fresh Coconuts",
+    "Tropical Delights": "Coconut Oil & By-products",
+    "Green Harvest": "Coconut-based Health Supplements",
+  };
+
+  final Map<String, int> vendorSubscriptions = {
+    "Coconut Haven": 10,
+    "Tropical Delights": 15,
+    "Green Harvest": 8,
+  }; // Quantities added by different vendors
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Available Subscription Plans")),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('subscriptions').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text("No subscriptions available"));
-          }
-
-          var subscriptions = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: subscriptions.length,
-            itemBuilder: (context, index) {
-              var data = subscriptions[index].data() as Map<String, dynamic>;
-
+      appBar: AppBar(title: Text("Subscription Plan")),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: vendorSubscriptions.entries.map((entry) {
+              int index = vendorSubscriptions.entries.toList().indexOf(entry); // Get index for each vendor
               return Card(
-                margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
                 elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: Padding(
-                  padding: EdgeInsets.all(12),
+                  padding: EdgeInsets.all(16.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Product Name
-                      Text(
-                        data['product'] ?? "No Product Name",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                      Text("${entry.key} ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 10),
+                      // Add product type under company name
+                      Text("Product Type: ${vendorProductTypes[entry.key]}", style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      // Add an image below the company name
+                      Image.asset(
+                        'assets/images/product_image.jpg', // Replace with your image path
+                        height: 100, // Adjust height
+                        fit: BoxFit.cover,
                       ),
-                      SizedBox(height: 5),
-
-                      // Company Name
-                      Text(
-                        "Company: ${data['companyName'] ?? 'Unknown'}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blueGrey,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-
-                      // Duration and Price
-                      Text(
-                        "Plan: ${data['duration'] ?? 'N/A'} | ₹${data['price'].toString()}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.green,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-
-                      // Description (if available)
-                      if (data.containsKey('description') && data['description'] != null)
-                        Text(
-                          data['description'],
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-
-                      SizedBox(height: 12),
-
-                      // Subscribe Button
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Navigate to subscription details page if needed
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                          ),
-                          child: Text("Subscribe"),
-                        ),
+                      SizedBox(height: 10),
+                      Text("Get fresh organic coconut products delivered to your doorstep."),
+                      SizedBox(height: 10),
+                      // Add Select button
+                      ElevatedButton(
+                        onPressed: () {
+                          // Navigate to the product detail page and pass necessary parameters
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetail(
+                                productIndex: index,
+                                vendorId: entry.key, // Assuming the vendorId is the same as the vendor name
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text("Select Plan"),
                       ),
                     ],
                   ),
                 ),
               );
-            },
-          );
-        },
+            }).toList(),
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dup/view/AddAdvertisementPage.dart';
 import 'package:dup/view/Home.dart';
+import 'package:dup/view/Vendor_manage_booking.dart';
 import 'package:dup/view/bottomnav.dart';
+import 'package:dup/view/vendor_doorstep.dart';
 import 'package:flutter/material.dart';
 
 class VendorDashboard extends StatefulWidget {
@@ -72,55 +75,55 @@ class _VendorDashboardState extends State<VendorDashboard> {
 
             const SizedBox(height: 20),
 
-            // Rounded Bar with "Switch as Customer" Button
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30), // Rounded corners
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF033015), Colors.grey], // Dark Green & Grey Gradient
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5), // Bottom right shadow for 3D effect
-                    blurRadius: 8,
-                    offset: const Offset(4, 4),
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.2), // Top left highlight for depth
-                    blurRadius: 5,
-                    offset: const Offset(-4, -4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // const Text(
-                  //   "Vendor Mode",
-                  //   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  // ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _switchToUserMode,
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)), // Rounded Button
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF033015),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      elevation: 3,
-                    ),
-                    child: const Text(
-                      "Switch as Customer",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // // Rounded Bar with "Switch as Customer" Button
+            // Container(
+            //   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            //   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            //   decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.circular(30), // Rounded corners
+            //     gradient: const LinearGradient(
+            //       colors: [Color(0xFF033015), Colors.grey], // Dark Green & Grey Gradient
+            //       begin: Alignment.topLeft,
+            //       end: Alignment.bottomRight,
+            //     ),
+            //     boxShadow: [
+            //       BoxShadow(
+            //         color: Colors.black.withOpacity(0.5), // Bottom right shadow for 3D effect
+            //         blurRadius: 8,
+            //         offset: const Offset(4, 4),
+            //       ),
+            //       BoxShadow(
+            //         color: Colors.white.withOpacity(0.2), // Top left highlight for depth
+            //         blurRadius: 5,
+            //         offset: const Offset(-4, -4),
+            //       ),
+            //     ],
+            //   ),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       // const Text(
+            //       //   "Vendor Mode",
+            //       //   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            //       // ),
+            //       const SizedBox(width: 10),
+            //       ElevatedButton(
+            //         onPressed: _switchToUserMode,
+            //         style: ElevatedButton.styleFrom(
+            //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)), // Rounded Button
+            //           backgroundColor: Colors.white,
+            //           foregroundColor: const Color(0xFF033015),
+            //           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            //           elevation: 3,
+            //         ),
+            //         child: const Text(
+            //           "Switch as Customer",
+            //           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
 
             const SizedBox(height: 20),
@@ -136,8 +139,8 @@ class _VendorDashboardState extends State<VendorDashboard> {
               children: [
                 _buildCard(context, "Add Subscription", Icons.lock_clock, AddSubscriptionPage()),
                 _buildCard(context, "Manage Subscription", Icons.list_alt, ManageSubscriptionPage()),
-                _buildCard(context, "Doorstep Delivery", Icons.delivery_dining, AddDoorstepDeliveryPage()),
-                _buildCard(context, "Manage Bookings", Icons.calendar_today, ManageBookingsPage()),
+                _buildCard(context, "Doorstep Delivery", Icons.delivery_dining, AddDoorstepDelivery()),
+                _buildCard(context, "Manage Bookings", Icons.calendar_today, ManageBookingPage()),
                 _buildCard(context, "Add Coconut Products", Icons.eco, AddCoconutProductsPage()),
                 _buildCard(context, "Add Tools", Icons.build, AddToolsPage()),
                 _buildCard(context, "Manage Orders", Icons.shopping_basket, ManageOrdersPage()),
@@ -218,12 +221,10 @@ class _VendorDashboardState extends State<VendorDashboard> {
 
 // Dummy pages for navigation (Replace with actual pages)
 class AddSubscriptionPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Subscription"))); }}
-class AddDoorstepDeliveryPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Doorstep Delivery"))); }}
 class ManageOrdersPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Manage Orders"))); }}
-class ManageBookingsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Manage Bookings"))); }}
 class ManageSubscriptionPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Manage Subscription"))); }}
 class AddCoconutProductsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Coconut Products"))); }}
 class AddToolsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Tools"))); }}
-class AddAdvertisementPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Advertisement"))); }}
+//class AddAdvertisementPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Advertisement"))); }}
 class VendorProfilePage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Vendor Profile"))); }}
 
