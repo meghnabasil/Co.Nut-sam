@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dup/controller/session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../controller/vendor_controller.dart';
@@ -25,7 +26,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   /// Pick Image from Gallery
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         businessLogo = File(pickedFile.path);
@@ -38,7 +40,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      String? errorMessage = await _vendorController.registerVendor(
+      String? vendorID = await _vendorController.registerVendor(
         businessName,
         phone,
         address,
@@ -47,15 +49,16 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         productCategory,
         selectedBusinessTypes,
       );
-
-      if (errorMessage == null) {
+      print(vendorID);
+      if (vendorID != null && !vendorID.contains("User not logged in")) {
+        await Session.saveVendor(vendorID);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Vendor Registered Successfully!')),
+          SnackBar(content: Text('$vendorID Vendor Registered Successfully!')),
         );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
+          SnackBar(content: Text(vendorID??"Error registering vendor""Error registering vendor")),
         );
       }
     }
@@ -64,13 +67,19 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Vendor Registration",style: TextStyle(color: Colors.white),), backgroundColor: Color(0xFF033015)),
+      appBar: AppBar(
+          title: Text(
+            "Vendor Registration",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Color(0xFF033015)),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Card(
           shadowColor: Colors.green,
           elevation: 30,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Form(
@@ -82,8 +91,12 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundImage: businessLogo != null ? FileImage(businessLogo!) : null,
-                      child: businessLogo == null ? Icon(Icons.camera_alt, size: 40) : null,
+                      backgroundImage: businessLogo != null
+                          ? FileImage(businessLogo!)
+                          : null,
+                      child: businessLogo == null
+                          ? Icon(Icons.camera_alt, size: 40)
+                          : null,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -91,7 +104,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                   // Business Name
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Business Name'),
-                    validator: (value) => value!.isEmpty ? "Enter business name" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter business name" : null,
                     onSaved: (value) => businessName = value!,
                   ),
 
@@ -99,21 +113,25 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Phone Number'),
                     keyboardType: TextInputType.phone,
-                    validator: (value) => value!.length >= 10 ? null : "Enter a valid phone number",
+                    validator: (value) => value!.length >= 10
+                        ? null
+                        : "Enter a valid phone number",
                     onSaved: (value) => phone = value!,
                   ),
 
                   // Address
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Business Address'),
-                    validator: (value) => value!.isEmpty ? "Enter address" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter address" : null,
                     onSaved: (value) => address = value!,
                   ),
 
                   // City
                   TextFormField(
                     decoration: InputDecoration(labelText: 'City'),
-                    validator: (value) => value!.isEmpty ? "Enter city name" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter city name" : null,
                     onSaved: (value) => city = value!,
                   ),
 
@@ -121,16 +139,21 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                   DropdownButtonFormField(
                     value: businessType,
                     items: ['Farm', 'Manufacturer', 'Retailer']
-                        .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                        .map((type) =>
+                            DropdownMenuItem(value: type, child: Text(type)))
                         .toList(),
-                    onChanged: (value) => setState(() => businessType = value as String),
+                    onChanged: (value) =>
+                        setState(() => businessType = value as String),
                     decoration: InputDecoration(labelText: 'Business Type'),
                   ),
 
                   // Product Category
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Product Category (coconut oil, copra, etc.)'),
-                    onChanged: (value) => setState(() => productCategory = value),
+                    decoration: InputDecoration(
+                        labelText:
+                            'Product Category (coconut oil, copra, etc.)'),
+                    onChanged: (value) =>
+                        setState(() => productCategory = value),
                   ),
 
                   SizedBox(height: 20),
@@ -141,24 +164,29 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                     children: [
                       Text(
                         "Business Model",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Wrap(
                         spacing: 10,
-                        children: ['Wholesale', 'Retail', 'International Exporting']
+                        children: [
+                          'Wholesale',
+                          'Retail',
+                          'International Exporting'
+                        ]
                             .map((model) => CheckboxListTile(
-                          title: Text(model),
-                          value: selectedBusinessTypes.contains(model),
-                          onChanged: (value) {
-                            setState(() {
-                              if (value == true) {
-                                selectedBusinessTypes.add(model);
-                              } else {
-                                selectedBusinessTypes.remove(model);
-                              }
-                            });
-                          },
-                        ))
+                                  title: Text(model),
+                                  value: selectedBusinessTypes.contains(model),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        selectedBusinessTypes.add(model);
+                                      } else {
+                                        selectedBusinessTypes.remove(model);
+                                      }
+                                    });
+                                  },
+                                ))
                             .toList(),
                       ),
                     ],
@@ -172,7 +200,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                   ElevatedButton(
                     onPressed: _saveVendor,
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(const Color(0xFF033015)),
+                      backgroundColor:
+                          MaterialStateProperty.all(const Color(0xFF033015)),
                       foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     child: const Text('Register'),

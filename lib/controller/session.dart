@@ -5,13 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Session {
   static const String _emailKey = 'email';
   static const String _uuidKey = 'uid';
+  static const String _vvidkey = 'vid';
 
-  // Save email & UUID
   static Future<void> saveSession(String email, String uuid) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_emailKey, email);
     await prefs.setString(_uuidKey, uuid);
   }
+
 
   // Get session data
   static Future<Map<String, String?>> getSession() async {
@@ -22,6 +23,19 @@ class Session {
     };
   }
 
+
+  // save vendor id
+  static Future<void> saveVendor(String vvid) async {
+    SharedPreferences prefs =await SharedPreferences.getInstance();
+    await prefs.setString(_vvidkey, vvid);
+}
+// get vendor data
+  static Future<Map<String,String?>> getVendor() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return{
+      'vid':prefs.getString(_vvidkey),
+    };
+  }
 
   // Get user details from Firestore using email
   static Future<Map<String, dynamic>?> getUserDetails() async {

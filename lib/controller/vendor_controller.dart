@@ -12,7 +12,6 @@ class VendorController {
       String city, String businessType, String productCategory,
       List<String> businessModel) async {
     try {
-      // Get the currently logged-in user's UID
       User? user = _auth.currentUser;
       if (user == null) {
         return "User not logged in";
@@ -20,7 +19,6 @@ class VendorController {
 
       Vendor vendor = Vendor(
         uid: user.uid,
-        // Using the same user ID
         businessName: businessName,
         email: user.email!,
         phone: phone,
@@ -31,9 +29,9 @@ class VendorController {
         businessModel: businessModel,
       );
 
-      await _firestore.collection("vendors").add(vendor.toMap());
+      DocumentReference docRef = await _firestore.collection("vendors").add(vendor.toMap());
 
-      return null; // Success
+      return docRef.id; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
     }

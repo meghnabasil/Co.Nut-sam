@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/controller/session.dart';
 import 'package:dup/controller/vendor_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/Doorstep_model.dart';
@@ -6,9 +7,12 @@ import '../model/Doorstep_model.dart';
 class DoorstepDeliveryController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  Future<String?> getSessionVendorId() async {
+    Map<String, String?> vendorData = await Session.getVendor();
+    return vendorData['vid'];
+  }
   /// **Fetch Vendor ID from Firestore**
-  Future<String?> getVendorId() async {
+ /* Future<String?> getVendorId() async {
     try {
       User? user = _auth.currentUser;
       if (user == null) {
@@ -30,7 +34,10 @@ class DoorstepDeliveryController {
       print("Error fetching vendor ID: $e");
       return null;
     }
-  }
+  }*/
+
+
+
 
   /// **Add Doorstep Delivery Details**
   Future<String?> addDoorstepDelivery(
@@ -44,7 +51,7 @@ class DoorstepDeliveryController {
       String details,
       )async {
     try {
-      String? vendorId = await getVendorId();
+      String? vendorId = await getSessionVendorId();
       if (vendorId == null) {
         return "Vendor ID not found";
       }
@@ -75,8 +82,9 @@ class DoorstepDeliveryController {
   /// **Fetch Doorstep Delivery Details Using Vendor ID**
   Future<List<DoorstepDelivery>> fetchDoorstepDeliveries() async {
     try {
-      String? vendorId = await getVendorId();
+      String? vendorId = await getSessionVendorId();
       if (vendorId == null) {
+        print("Vendor ID not found");
         return [];
       }
 

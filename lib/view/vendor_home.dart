@@ -3,7 +3,9 @@ import 'package:dup/view/AddAdvertisementPage.dart';
 import 'package:dup/view/Home.dart';
 import 'package:dup/view/Vendor_manage_booking.dart';
 import 'package:dup/view/bottomnav.dart';
+import 'package:dup/view/vendor_AddCoconutProductsPage.dart';
 import 'package:dup/view/vendor_doorstep.dart';
+import 'package:dup/view/vendor_viewproduct.dart';
 import 'package:flutter/material.dart';
 
 class VendorDashboard extends StatefulWidget {
@@ -72,8 +74,21 @@ class _VendorDashboardState extends State<VendorDashboard> {
                 );
               }).toList(),
             ),
-
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 5,
+              child: ListTile(
+                leading: Icon(Icons.visibility, color: Colors.green),
+                title: Text("View Your Products", style: TextStyle(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ViewProductvendor()),
+                  );
+                },
+              ),
+            ),
 
             // // Rounded Bar with "Switch as Customer" Button
             // Container(
@@ -141,7 +156,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
                 _buildCard(context, "Manage Subscription", Icons.list_alt, ManageSubscriptionPage()),
                 _buildCard(context, "Doorstep Delivery", Icons.delivery_dining, AddDoorstepDelivery()),
                 _buildCard(context, "Manage Bookings", Icons.calendar_today, ManageBookingPage()),
-                _buildCard(context, "Add Coconut Products", Icons.eco, AddCoconutProductsPage()),
+                _buildCard(context, "Add Coconut Products", Icons.eco, AddProductPage()),
                 _buildCard(context, "Add Tools", Icons.build, AddToolsPage()),
                 _buildCard(context, "Manage Orders", Icons.shopping_basket, ManageOrdersPage()),
                 _buildCard(context, "Add Advertisement", Icons.ondemand_video, AddAdvertisementPage()),
@@ -223,7 +238,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
 class AddSubscriptionPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Subscription"))); }}
 class ManageOrdersPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Manage Orders"))); }}
 class ManageSubscriptionPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Manage Subscription"))); }}
-class AddCoconutProductsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Coconut Products"))); }}
+//class AddCoconutProductsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Coconut Products"))); }}
 class AddToolsPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Tools"))); }}
 //class AddAdvertisementPage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Add Advertisement"))); }}
 class VendorProfilePage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text("Vendor Profile"))); }}

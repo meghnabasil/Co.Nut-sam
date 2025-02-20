@@ -1,3 +1,4 @@
+import 'package:dup/view/vendormessagescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:dup/controller/vendor_controller.dart';
 import 'package:dup/view/CompanyDetail.dart';
@@ -192,6 +193,23 @@ class _ProductDetailState extends State<ProductDetail> {
                 ),
               ],
             ),
+            Positioned(
+              right: 10,
+              top: 5,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  'Exporting International',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+
             SizedBox(height: 20),
             Card(
               elevation: 3,
@@ -368,11 +386,19 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Vendor_ChatScreen(companyName: "Company Name"),
+            ),
+          );
+        },
         backgroundColor: Colors.grey,
         child: Icon(Icons.chat, color: Color(0xFF033015)),
         tooltip: 'Message us',
       ),
+
     );
   }
 }

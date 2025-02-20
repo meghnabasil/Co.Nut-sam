@@ -26,7 +26,7 @@ class DoorstepDelivery {
   // Convert to Map for Firestore
   Map<String, dynamic> toMap() {
     return {
-      'uid': vid,
+      'vendorId': vid,
       'companyName': companyName,
       'phone': phone,
       'address': address,

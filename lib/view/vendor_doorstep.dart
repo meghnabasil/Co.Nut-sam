@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../controller/Door_controller.dart';
+import '../controller/session.dart';
 
 class AddDoorstepDelivery extends StatefulWidget {
   @override
@@ -20,7 +21,20 @@ class _AddDoorstepDeliveryState extends State<AddDoorstepDelivery> {
   final TextEditingController detailsController = TextEditingController();
 
   bool _isLoading = false;
+  String? vendorID;
 
+  @override
+  void initState() {
+    super.initState();
+    _getVendorID();
+  }
+
+  Future<void> _getVendorID() async {
+    Map<String, String?> vendorData = await Session.getVendor();
+    setState(() {
+      vendorID = vendorData['vid'];
+    });
+  }
   @override
   void dispose() {
     companyNameController.dispose();
@@ -76,6 +90,7 @@ class _AddDoorstepDeliveryState extends State<AddDoorstepDelivery> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Add Doorstep Delivery")),
+        backgroundColor: Color(0xFF033015),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Card(
