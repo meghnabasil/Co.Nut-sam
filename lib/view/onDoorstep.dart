@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dup/view/Booking.dart';
 
@@ -36,6 +37,7 @@ class Doorsteps extends StatelessWidget {
             itemBuilder: (context, index) {
               var data = services[index].data() as Map<String, dynamic>;
 
+              String vendorId =data['vendorId'];
               String processingType = data['processingType'] ?? 'Unknown Type'; // Used as title
               String companyName = data['companyName'] ?? 'Unknown Company';
               String address = data['address'] ?? 'No Address';
@@ -66,6 +68,7 @@ class Doorsteps extends StatelessWidget {
                         companyName,
                         style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                       ),
+
                       SizedBox(height: 10),
                       Table(
                         columnWidths: const {
@@ -102,6 +105,8 @@ class Doorsteps extends StatelessWidget {
                                   serviceName: processingType, // Passed processingType instead
                                   companyName: companyName,
                                   price: price,
+                                  userId: FirebaseAuth.instance.currentUser!.uid,
+                                  vendorId: vendorId,
                                 ),
                               ),
                             );

@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:dup/controller/Booking_controller.dart';
+import 'package:dup/model/Booking_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingPage extends StatefulWidget {
   final int index;
   final String serviceName;
   final String companyName;
   final double price;
+  final String userId;
+  // Added vendor details
+  final String vendorId;
 
   BookingPage({
     required this.index,
     required this.serviceName,
     required this.companyName,
     required this.price,
+    required this.userId,
+    required this.vendorId,
   });
 
   @override
@@ -18,17 +26,20 @@ class BookingPage extends StatefulWidget {
 }
 
 class _BookingPageState extends State<BookingPage> {
+  final BookingController _bookingController = BookingController();
+
   TextEditingController pickupDateController = TextEditingController();
   TextEditingController returnDateController = TextEditingController();
-  TextEditingController countryController = TextEditingController();
+
+  // Address details controllers
   TextEditingController fullNameController = TextEditingController();
   TextEditingController mobileNumberController = TextEditingController();
-  TextEditingController buildingDetailsController = TextEditingController();
-  TextEditingController areaController = TextEditingController();
-  TextEditingController landmarkController = TextEditingController();
-  TextEditingController pincodeController = TextEditingController();
-  TextEditingController townCityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
+  TextEditingController townCityController = TextEditingController();
+  TextEditingController pincodeController = TextEditingController();
+  TextEditingController areaController = TextEditingController();
+  TextEditingController buildingDetailsController = TextEditingController();
+  TextEditingController landmarkController = TextEditingController();
 
   int quantity = 1;
   String unit = "kg";
@@ -66,42 +77,65 @@ class _BookingPageState extends State<BookingPage> {
     }
   }
 
+  void _confirmBooking() {
+    if (fullNameController.text.isEmpty ||
+        mobileNumberController.text.isEmpty ||
+        stateController.text.isEmpty ||
+        townCityController.text.isEmpty ||
+        pincodeController.text.isEmpty ||
+        areaController.text.isEmpty ||
+        buildingDetailsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Please enter all required address details"),
+      ));
+      return;
+    }
+
+    Booking newBooking = Booking(
+      serviceName: widget.serviceName,
+      companyName: widget.companyName,
+      price: updatedPrice,
+      quantity: quantity,
+      unit: unit,
+      pickupDate: pickupDateController.text,
+      returnDate: returnDateController.text,
+      fullName: fullNameController.text,
+      mobileNumber: mobileNumberController.text,
+      district: stateController.text,
+      townCity: townCityController.text,
+      pincode: pincodeController.text,
+      area: areaController.text,
+      buildingDetails: buildingDetailsController.text,
+      landmark: landmarkController.text,
+      userId: widget.userId,
+      vendorId: widget.vendorId,
+      createdAt: Timestamp.now(),
+    );
+
+    _bookingController.addBooking(newBooking);
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Booking Confirmed!"),
+    ));
+
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Book Service", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF033015),
-        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildCard(),
-            // SizedBox(height: 15),
-            // _buildTextField(pickupDateController, "Select Pickup Date", isDate: true),
-            // SizedBox(height: 10),
-            // _buildTextField(returnDateController, "Select Return Date", isDate: true),
-            SizedBox(height: 10),
-            _buildTextField(fullNameController, "Full Name"),
-            SizedBox(height: 10),
-            _buildTextField(mobileNumberController, "Mobile Number", keyboardType: TextInputType.phone),
-            SizedBox(height: 10),
-            // _buildTextField(countryController, "Country"),
-            // SizedBox(height: 10),
-            _buildTextField(stateController, "District"),
-            SizedBox(height: 10),
-            _buildTextField(townCityController, "Town/City"),
-            SizedBox(height: 10),
-            _buildTextField(pincodeController, "Pincode", keyboardType: TextInputType.number),
-            SizedBox(height: 10),
-            _buildTextField(areaController, "Area, Street, Sector, Village"),
-            SizedBox(height: 10),
-            _buildTextField(buildingDetailsController, "Flat, House No., Building, Company, Apartment"),
-            SizedBox(height: 10),
-            _buildTextField(landmarkController, "Landmark (Optional)"),
-            SizedBox(height: 20),
+            _buildServiceCard(),
+            SizedBox(height: 15),
+            _buildAddressCard(),
+            SizedBox(height: 15),
             _buildConfirmButton(),
           ],
         ),
@@ -109,7 +143,7 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
-  Widget _buildCard() {
+  Widget _buildServiceCard() {
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -118,15 +152,15 @@ class _BookingPageState extends State<BookingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.serviceName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
+            Text(widget.serviceName,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
             SizedBox(height: 5),
             Text(widget.companyName, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
             SizedBox(height: 10),
-            Text("Price: \$${updatedPrice.toStringAsFixed(2)}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF380230))),
+            Text("Price: \$${updatedPrice.toStringAsFixed(2)}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF380230))),
             Divider(thickness: 1, color: Colors.grey[300]),
             SizedBox(height: 10),
-            // _buildQuantityAndUnitSelection(),
-            // SizedBox(height: 15),
             _buildQuantityAndUnitSelection(),
             SizedBox(height: 15),
             _buildTextField(pickupDateController, "Select Pickup Date", isDate: true),
@@ -138,7 +172,41 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String labelText, {TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildAddressCard() {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Enter Your Address",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+            SizedBox(height: 10),
+            _buildTextField(fullNameController, "Full Name"),
+            SizedBox(height: 10),
+            _buildTextField(mobileNumberController, "Mobile Number", keyboardType: TextInputType.phone),
+            SizedBox(height: 10),
+            _buildTextField(buildingDetailsController, "house or company name/no"),
+            SizedBox(height: 10),
+            _buildTextField(areaController, "Area, Street, Sector, Village"),
+            SizedBox(height: 10),
+            _buildTextField(townCityController, "Town/City"),
+            SizedBox(height: 10),
+            _buildTextField(stateController, "District"),
+            SizedBox(height: 10),
+            _buildTextField(pincodeController, "Pincode", keyboardType: TextInputType.number),
+            SizedBox(height: 10),
+            _buildTextField(landmarkController, "Landmark (Optional)"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String labelText,
+      {TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
     return TextField(
       controller: controller,
       readOnly: isDate,
@@ -201,9 +269,7 @@ class _BookingPageState extends State<BookingPage> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           padding: EdgeInsets.symmetric(vertical: 12),
         ),
-        onPressed: () {
-          // Handle booking confirmation
-        },
+        onPressed: _confirmBooking,
         child: Text("Confirm Booking", style: TextStyle(color: Colors.white, fontSize: 16)),
       ),
     );
