@@ -1,152 +1,256 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ViewProductvendor extends StatefulWidget {
+class ProductDisplayPage extends StatefulWidget {
   @override
-  _ViewProductvendorState createState() => _ViewProductvendorState();
+  _ProductDisplayPageState createState() => _ProductDisplayPageState();
 }
 
-class _ViewProductvendorState extends State<ViewProductvendor> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _companyController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  List<File> _images = [];
-  List<Map<String, dynamic>> _products = [];
+class _ProductDisplayPageState extends State<ProductDisplayPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? currentVendorId;
 
-  Future<void> _pickImages() async {
-    final pickedFiles = await ImagePicker().pickMultiImage();
-    if (pickedFiles != null) {
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentVendor();
+  }
+
+  void _getCurrentVendor() {
+    final User? user = _auth.currentUser;
+    if (user != null) {
       setState(() {
-        _images = pickedFiles.map((file) => File(file.path)).toList();
+        currentVendorId = user.uid;
       });
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _products.add({
-          "name": _nameController.text,
-          "company": _companyController.text,
-          "price": _priceController.text,
-          "quantity": _quantityController.text,
-          "description": _descriptionController.text,
-          "images": _images,
-          "status": "In Stock"
-        });
-      });
+  Future<List<Map<String, dynamic>>> _fetchVendorProducts() async {
+    if (currentVendorId == null) return [];
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .where('vendorId', isEqualTo: currentVendorId)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      var data = doc.data() as Map<String, dynamic>;
+      data['id'] = doc.id; // Add document ID to the data
+      return data;
+    }).toList();
+  }
+
+  void _showUpdateStockBottomSheet(Map<String, dynamic> product) {
+    final TextEditingController _stockController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Update Stock for ${product['name']}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: _stockController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Enter new stock quantity"),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF008000)),
+                onPressed: () async {
+                  final int? newStock = int.tryParse(_stockController.text);
+                  if (newStock != null) {
+                    await FirebaseFirestore.instance
+                        .collection('products')
+                        .doc(product['id'])
+                        .update({'stock': newStock});
+                    setState(() {
+                      product['stock'] = newStock;
+                    });
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Text("Update Stock", style: TextStyle(color: Colors.white)),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteProduct(String productId) async {
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Delete Product"),
+          content: Text("Are you sure you want to delete this product?"),
+          actions: [
+            TextButton(
+              child: Text("Cancel", style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF008000)),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("Delete", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      await FirebaseFirestore.instance.collection('products').doc(productId).delete();
+      setState(() {});
     }
   }
 
-  void _toggleStockStatus(int index) {
-    setState(() {
-      _products[index]["status"] = _products[index]["status"] == "In Stock" ? "Out of Stock" : "In Stock";
-    });
+  Widget _buildProductCard(Map<String, dynamic> product, String productId) {
+    // Ensure 'imageUrls' is a list and not empty
+    List<dynamic>? imageUrls = product['imageUrls'];
+    List<String> imageList = [];
+
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      // Convert dynamic list to List<String>
+      imageList = List<String>.from(imageUrls);
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 200,
+              width: double.infinity,
+              child: imageList.isNotEmpty
+                  ? ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: imageList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageList[index],
+                        width: 322,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              )
+                  : Center(
+                child: Text("No Images Available", style: TextStyle(color: Colors.grey)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product['name'] ?? 'Unnamed Product',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Category: ${product['category'] ?? 'N/A'}",
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Company: ${product['company'] ?? 'N/A'}",
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Price: \$${product['price']?.toStringAsFixed(2) ?? 'N/A'}",
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Description: ${product['description'] ?? 'No description'}",
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Stock: ${product['stock'] ?? 'N/A'}",
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                          onPressed: () => _showUpdateStockBottomSheet(product),
+                          child: Text("Update Stock", style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                          onPressed: () => _deleteProduct(product['id']),
+                          child: Text("Delete", style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("View Products", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF033015),
-        iconTheme: IconThemeData(color: Colors.white),
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white54,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search products...',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 10),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.white),
-            onPressed: () {
-              // Add filter functionality here
-            },
-          ),
-        ],
       ),
-      body: GridView.builder(
-        padding: EdgeInsets.all(10),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.8,
-        ),
-        itemCount: _products.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              // Add navigation to product detail page if needed
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _fetchVendorProducts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error loading products"));
+          }
+          List<Map<String, dynamic>>? products = snapshot.data;
+          if (products == null || products.isEmpty) {
+            return Center(child: Text("No products available."));
+          }
+          return ListView.builder(
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              String productId = products[index]['id'] ?? '';
+              return _buildProductCard(products[index], productId);
             },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              elevation: 10,
-              shadowColor: Colors.green,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                      child: _products[index]["images"].isNotEmpty
-                          ? Image.file(
-                        _products[index]["images"][0],
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      )
-                          : Container(
-                        height: 120,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                        ),
-                        child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _products[index]["name"],
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          _products[index]["company"],
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          '\$${_products[index]["price"]}',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
           );
         },
       ),
     );
   }
 }
+

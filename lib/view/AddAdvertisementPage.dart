@@ -37,8 +37,6 @@ class _AddAdvertisementPageState extends State<AddAdvertisementPage> {
       );
       return;
     }
-    print("Image Advertisement Submitted");
-    print("Image selected: ${_image!.path}");
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Image Advertisement Posted Successfully!")),
     );
@@ -54,8 +52,6 @@ class _AddAdvertisementPageState extends State<AddAdvertisementPage> {
       );
       return;
     }
-    print("Video Advertisement Submitted");
-    print("Video selected: ${_video!.path}");
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Video Advertisement Posted Successfully!")),
     );
@@ -67,80 +63,89 @@ class _AddAdvertisementPageState extends State<AddAdvertisementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add Advertisement"), backgroundColor: Color(0xFF033015)),
+      appBar: AppBar(title: Text("Add Advertisement",style: TextStyle(color: Colors.white),), backgroundColor: Color(0xFF033015)),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: "Advertisement Description",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.text_fields),
-                ),
-                maxLines: 3,
-              ),
-              SizedBox(height: 15),
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 5,
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  child: Center(
-                    child: _image == null
-                        ? Text("Post Image", style: TextStyle(color: Colors.white))
-                        : Image.file(_image!, fit: BoxFit.cover),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: Colors.green, width: 2),
+            ),
+            elevation: 5,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Dear Vendors, Upload your advertisement below and enhance your company into next level in market.Images and videos you post will "
+                        "appear in the home screen were your customers can view your magics:",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: Icon(Icons.image, color: Colors.white),
-                label: Text("Upload Image", style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _submitImageAd,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF033015),
-                ),
-                child: Text("Post Image Advertisement", style: TextStyle(color: Colors.white)),
-              ),
-              SizedBox(height: 20),
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 5,
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  child: Center(
-                    child: _video == null
-                        ? Text("Post Video", style: TextStyle(color: Colors.white))
-                        : Icon(Icons.video_collection, size: 50, color: Colors.red),
+                  SizedBox(height: 15),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.green, width: 2),
+                    ),
+                    elevation: 5,
+                    child: Container(
+                      height: 150,
+                      width: double.infinity,
+                      child: Center(
+                        child: _image == null
+                            ? Text("Post Image", style: TextStyle(color: Colors.black))
+                            : Image.file(_image!, fit: BoxFit.cover),
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: Icon(Icons.image, color: Colors.white),
+                    label: Text("Upload Image", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _submitImageAd,
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                    child: Text("Post Image Advertisement", style: TextStyle(color: Colors.white)),
+                  ),
+                  SizedBox(height: 20),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.green, width: 2),
+                    ),
+                    elevation: 5,
+                    child: Container(
+                      height: 150,
+                      width: double.infinity,
+                      child: Center(
+                        child: _video == null
+                            ? Text("Post Video", style: TextStyle(color: Colors.black))
+                            : Icon(Icons.video_collection, size: 50, color: Colors.red),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _pickVideo,
+                    icon: Icon(Icons.video_call, color: Colors.white),
+                    label: Text("Upload Video", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _submitVideoAd,
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
+                    child: Text("Post Video Advertisement", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _pickVideo,
-                icon: Icon(Icons.video_call, color: Colors.white),
-                label: Text("Upload Video", style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _submitVideoAd,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF033015),
-                ),
-                child: Text("Post Video Advertisement", style: TextStyle(color: Colors.white)),
-              ),
-            ],
+            ),
           ),
         ),
       ),

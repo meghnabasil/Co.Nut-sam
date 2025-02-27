@@ -1,16 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class AddProductPage extends StatefulWidget {
+class addtoolPage extends StatefulWidget {
   @override
-  _AddProductPageState createState() => _AddProductPageState();
+  _addtoolPageState createState() => _addtoolPageState();
 }
 
-class _AddProductPageState extends State<AddProductPage> {
+class _addtoolPageState extends State<addtoolPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _companyController = TextEditingController();
@@ -18,7 +15,6 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _descriptionController = TextEditingController();
   List<File> _images = [];
   String? _selectedCategory;
-  bool _isUploading = false;
 
   final List<String> _categories = [
     "Fresh Coconuts",
@@ -41,68 +37,9 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  Future<void> _uploadProduct() async {
-    if (!_formKey.currentState!.validate() || _selectedCategory == null || _images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields and select images')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isUploading = true;
-    });
-
-    try {
-      // Get current vendor ID
-      String? vendorId = FirebaseAuth.instance.currentUser?.uid;
-      if (vendorId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: Vendor not authenticated')),
-        );
-        return;
-      }
-
-      List<String> imageUrls = [];
-      for (File image in _images) {
-        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        Reference storageRef = FirebaseStorage.instance.ref().child('product_images/$fileName.jpg');
-        UploadTask uploadTask = storageRef.putFile(image);
-        TaskSnapshot taskSnapshot = await uploadTask;
-        String imageUrl = await taskSnapshot.ref.getDownloadURL();
-        imageUrls.add(imageUrl);
-      }
-
-      await FirebaseFirestore.instance.collection('products').add({
-        'name': _nameController.text,
-        'company': _companyController.text,
-        'price': double.parse(_priceController.text),
-        'category': _selectedCategory,
-        'description': _descriptionController.text,
-        'imageUrls': imageUrls,
-        'vendorId': vendorId, // ✅ Added vendor ID here
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      setState(() {
-        _isUploading = false;
-        _images = [];
-        _nameController.clear();
-        _companyController.clear();
-        _priceController.clear();
-        _descriptionController.clear();
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Product uploaded successfully!')),
-      );
-    } catch (e) {
-      setState(() {
-        _isUploading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: $e')),
-      );
+  void _submitForm() {
+    if (_formKey.currentState!.validate() && _selectedCategory != null) {
+      print("Product Added: ${_nameController.text}, Category: $_selectedCategory");
     }
   }
 
@@ -167,10 +104,12 @@ class _AddProductPageState extends State<AddProductPage> {
                         ? Wrap(
                       spacing: 8.0,
                       runSpacing: 8.0,
-                      children: _images.map((img) => ClipRRect(
+                      children: _images
+                          .map((img) => ClipRRect(
                         borderRadius: BorderRadius.circular(30),
                         child: Image.file(img, width: 80, height: 80, fit: BoxFit.cover),
-                      )).toList(),
+                      ))
+                          .toList(),
                     )
                         : Text("No images selected"),
                     SizedBox(height: 10),
@@ -202,12 +141,10 @@ class _AddProductPageState extends State<AddProductPage> {
                     SizedBox(height: 10),
                     _buildTextField(_descriptionController, "Description about Product", maxLines: 5),
                     SizedBox(height: 20),
-                    _isUploading
-                        ? Center(child: CircularProgressIndicator())
-                        : SizedBox(
+                    SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _uploadProduct,
+                        onPressed: _submitForm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF033015),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
