@@ -1,5 +1,6 @@
 import 'package:dup/view/productlist.dart';
 import 'package:flutter/material.dart';
+import 'package:dup/view/firstpage.dart';
 
 class Subscription extends StatefulWidget {
   @override
@@ -60,7 +61,8 @@ class _SubscriptionState extends State<Subscription> {
                             MaterialPageRoute(
                               builder: (context) => ProductDetail(
                                 productIndex: index,
-                                vendorId: entry.key, // Assuming the vendorId is the same as the vendor name
+                                vendorId: entry.key,
+                               // Assuming the vendorId is the same as the vendor name
                               ),
                             ),
                           );

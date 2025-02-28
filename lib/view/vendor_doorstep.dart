@@ -90,7 +90,7 @@ class _AddDoorstepDeliveryState extends State<AddDoorstepDelivery> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Add Doorstep Delivery")),
-        backgroundColor: Color(0xFF033015),
+        backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Card(
@@ -144,7 +144,7 @@ class _AddDoorstepDeliveryState extends State<AddDoorstepDelivery> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: Colors.grey[200], // Light background for better contrast
+          fillColor: Colors.white, // Light background for better contrast
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(35), // Rounded corners, // No border
           ),

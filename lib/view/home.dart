@@ -1,3 +1,4 @@
+import 'package:dup/model/products_model.dart';
 import 'package:dup/view/Favourites.dart';
 import 'package:dup/view/Tools.dart';
 import 'package:dup/view/firstpage.dart';
@@ -374,7 +375,7 @@ class _HomeState extends State<Home> {
                 mainAxisSpacing: 50,
                 childAspectRatio: 1.0,
                 children: [
-                  _buildCard(context, 'Coco Products', 'asset/all.webp', Product()),
+                  _buildCard(context, 'Coco Products', 'asset/all.webp', ProductScreen()),
                   _buildCard(context, 'Workers', 'asset/work.webp', WorkersList()),
                   _buildCard(context, 'On Doorstep', 'asset/delivery.webp', Doorsteps()),
                   _buildCard(context, 'Tools', 'asset/mach.webp', ListOfTools()),
@@ -490,38 +491,51 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
   Widget _buildCard(BuildContext context, String title, String imagePath, Widget page) {
     return GestureDetector(
       onTap: () => _navigateToPage(context, page),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        elevation: 5,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: 100,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFF033015).withOpacity(0.5), // Green shadow
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: Offset(0, 5), // Shadow at the bottom
             ),
           ],
+        ),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 0, // Remove default shadow since we are using a custom one
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 100,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 }

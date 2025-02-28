@@ -12,6 +12,7 @@ import 'package:dup/view/vendor_manage_order.dart';
 import 'package:dup/view/vendor_mange_subscription.dart';
 import 'package:dup/view/vendor_profile.dart';
 import 'package:dup/view/vendor_viewproduct.dart';
+import 'package:dup/view/viewCoco.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -41,14 +42,16 @@ class _VendorDashboardState extends State<VendorDashboard> {
       });
 
       try {
-        DocumentSnapshot vendorDoc =
-        await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
+        DocumentSnapshot vendorDoc = await FirebaseFirestore.instance
+            .collection('vendors')
+            .doc(user.uid)
+            .get();
 
         if (vendorDoc.exists) {
-          print("Vendor Document: ${vendorDoc.data()}"); // Debugging line
+          print("Vendor Document Data: ${vendorDoc.data()}"); // Debugging line
 
           setState(() {
-            vendorName = vendorDoc['name'] ?? "Vendor Name";
+            vendorName = vendorDoc['businessName'] ?? "Vendor Name";
             vendorEmail = vendorDoc['email'] ?? "vendor@example.com";
           });
         } else {
@@ -59,6 +62,8 @@ class _VendorDashboardState extends State<VendorDashboard> {
       }
     }
   }
+
+
 
   void _navigateToPage(BuildContext context, Widget page) {
     Navigator.push(
@@ -138,7 +143,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ProductDisplayPage()),
+                      MaterialPageRoute(builder: (context) => Viewcocoandtools()),
                     );
                   },
                 ),
@@ -160,7 +165,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
                 _buildCard(context, "Doorstep Delivery", Icons.delivery_dining, AddDoorstepDelivery()),
                 _buildCard(context, "Manage Bookings", Icons.calendar_today, ManageBookingPage()),
                 _buildCard(context, "Add Coconut Products", Icons.eco, AddProductPage()),
-                _buildCard(context, "Add Tools", Icons.build, addtoolPage()),
+                _buildCard(context, "Add Tools", Icons.build,AddToolPage()),
                 _buildCard(context, "Manage Orders", Icons.shopping_basket, ManageOrdersPage()),
                 _buildCard(context, "Add Advertisement", Icons.ondemand_video, AddAdvertisementPage()),
               ],
@@ -178,7 +183,8 @@ class _VendorDashboardState extends State<VendorDashboard> {
     return GestureDetector(
       onTap: () {
         if (vendorId != null) {
-          _navigateToPage(context, VendorProfilePage(vid: vendorId!));
+          _navigateToPage(
+              context, VendorProfilePage(vendorId: vendorId!));
         } else {
           print("Error: Vendor ID is null");
         }
@@ -284,7 +290,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
             onTap: () {
               Navigator.pop(context);
               if (vendorId != null) {
-                _navigateToPage(context, VendorProfilePage(vid: vendorId!));
+                _navigateToPage(context, VendorProfilePage(vendorId: vendorId!));
               }
             },
           ),

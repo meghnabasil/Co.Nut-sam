@@ -8,6 +8,7 @@ class Vendor {
   String businessType;
   String productCategory;
   List<String> businessModel;
+  String? imageUrl;
 
   Vendor({
     required this.uid,  // Ensure UID is required
@@ -19,6 +20,7 @@ class Vendor {
     required this.businessType,
     required this.productCategory,
     required this.businessModel,
+    this.imageUrl,
   });
 
   // Convert Vendor object to Map (for Firebase)
@@ -33,6 +35,7 @@ class Vendor {
       'businessType': businessType,
       'productCategory': productCategory,
       'businessModel': businessModel,
+      'imageUrl': imageUrl,
     };
   }
 
@@ -48,6 +51,8 @@ class Vendor {
       businessType: map['businessType'],
       productCategory: map['productCategory'],
       businessModel: List<String>.from(map['businessModel']),
+      imageUrl: map['imageUrl'],
+
     );
   }
 }

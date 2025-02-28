@@ -1,11 +1,8 @@
-import 'package:dup/view/vendormessagescreen.dart';
 import 'package:flutter/material.dart';
-import 'package:dup/controller/vendor_controller.dart';
-import 'package:dup/view/CompanyDetail.dart';
-import 'package:dup/view/chat.dart';
-import 'package:dup/view/chatdetailscreen.dart';
-import 'package:dup/view/international.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dup/view/vendormessagescreen.dart';
+import 'package:dup/view/CompanyDetail.dart';
 
 class ProductDetail extends StatefulWidget {
   final int productIndex;
@@ -18,10 +15,11 @@ class ProductDetail extends StatefulWidget {
 }
 
 class _ProductDetailState extends State<ProductDetail> {
-  String selectedOption = 'Retail';
+  Map<String, dynamic>? productData;
+  bool isLoading = true;
   bool isFavorite = false;
-  List<int> favoriteProducts = [];
   int quantity = 1;
+  List<String> imageUrls = [];
 
   // Flags to toggle visibility of containers
   bool showExportDetails = false;
@@ -29,68 +27,50 @@ class _ProductDetailState extends State<ProductDetail> {
   String selectedPlan = '1 Year';
   double price = 100.0; // Base price, can be adjusted
 
-  // to show company detail
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProductDetails();
+  }
+
+  Future<void> fetchProductDetails() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('products').get();
+      if (snapshot.docs.isNotEmpty && widget.productIndex < snapshot.docs.length) {
+        String productId = snapshot.docs[widget.productIndex].id;
+        DocumentSnapshot productSnapshot =
+        await FirebaseFirestore.instance.collection('products').doc(productId).get();
+
+        if (productSnapshot.exists) {
+          setState(() {
+            productData = productSnapshot.data() as Map<String, dynamic>?;
+            imageUrls = List<String>.from(productData?['imageUrls'] ?? []);
+            isLoading = false;
+          });
+        } else {
+          setState(() => isLoading = false);
+          print("Product not found");
+        }
+      } else {
+        setState(() => isLoading = false);
+        print("Invalid product index");
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      print("Error fetching product: $e");
+    }
+  }
+
+  void toggleFavorite() => setState(() => isFavorite = !isFavorite);
+
   void showCompanyDetailsPopup() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return CompanyDetail(vendorId: widget.vendorId); // Pass vendor ID to popup
-      },
-    );
-  }
-
-  void toggleFavorite() {
-    setState(() {
-      if (isFavorite) {
-        favoriteProducts.remove(widget.productIndex);
-      } else {
-        favoriteProducts.add(widget.productIndex);
-      }
-      isFavorite = !isFavorite;
-    });
-  }
-
-  void showWholesalePopup() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[400],
-          title: Text("Select Wholesale Type", style: TextStyle(fontSize: 15)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text("Local"),
-                leading: Radio(
-                  value: 'Local',
-                  groupValue: selectedOption,
-                  onChanged: (value) {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => International()),
-                    );
-                  },
-                ),
-              ),
-              ListTile(
-                title: Text("International"),
-                leading: Radio(
-                  value: 'International',
-                  groupValue: selectedOption,
-                  onChanged: (value) {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => International()),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
+        return CompanyDetail(vendorId: widget.vendorId);
       },
     );
   }
@@ -113,86 +93,91 @@ class _ProductDetailState extends State<ProductDetail> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Product ' + (widget.productIndex + 1).toString() + ' - A great choice for your needs!',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              productData?['name'] ?? 'Product Name',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 40),
-            CarouselSlider(
-              items: [
-                'asset/210379377.png',
-                'asset/img1.jpg',
-                'asset/music.jpg',
-              ].map((item) => Image.asset(
-                item,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              )).toList(),
+            SizedBox(height: 10),
+
+            imageUrls.isNotEmpty
+                ? CarouselSlider.builder(
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index, realIndex) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    imageUrls[index],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Icon(Icons.image_not_supported, size: 50, color: Colors.red),
+                      );
+                    },
+                  ),
+                );
+              },
               options: CarouselOptions(
-                height: 150,
+                height: 200,
                 enlargeCenterPage: true,
-                enableInfiniteScroll: true,
                 autoPlay: true,
                 autoPlayInterval: Duration(seconds: 5),
-                aspectRatio: 16 / 9,
-                viewportFraction: 0.8,
+              ),
+            )
+                : Center(
+              child: Text(
+                "No Images Available",
+                style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
-            SizedBox(height: 20),
+
+            SizedBox(height: 10),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border_outlined,
-                    color: Colors.red,
-                    size: 30,
-                  ),
+                  icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: Colors.red, size: 30),
                   onPressed: toggleFavorite,
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Divider(thickness: 2, color: Colors.brown),
-            const SizedBox(height: 10),
+
+            Divider(thickness: 2, color: Colors.brown),
+            SizedBox(height: 10),
 
             GestureDetector(
               onTap: showCompanyDetailsPopup,
-              child: Text('Company Name', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, decoration: TextDecoration.underline)),
+              child: Text(
+                productData?['company'] ?? 'Company Name',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
+
             SizedBox(height: 10),
-            Text(
-              '₹${(widget.productIndex + 1) * 20}',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
-            ),
-            SizedBox(height: 6),
-            Row(
-              children: [
-                Text("Quantity: ", style: TextStyle(fontSize: 16)),
-                IconButton(
-                  icon: Icon(Icons.remove),
-                  onPressed: () {
-                    setState(() {
-                      if (quantity > 1) quantity--;
-                    });
-                  },
-                ),
-                Text(quantity.toString(), style: TextStyle(fontSize: 16)),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    setState(() {
-                      quantity++;
-                    });
-                  },
-                ),
-              ],
-            ),
+
+            Text('₹${productData?['price'] ?? '0'}',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF380230))),
+
+            SizedBox(height: 10),
+
+
+            // Export signal card
             Positioned(
               right: 10,
               top: 5,
@@ -210,18 +195,37 @@ class _ProductDetailState extends State<ProductDetail> {
             ),
 
 
+            Row(
+              children: [
+                Text("Quantity: ", style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () => setState(() => quantity = quantity > 1 ? quantity - 1 : quantity),
+                ),
+                Text(quantity.toString(), style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () => setState(() => quantity++),
+                ),
+              ],
+            ),
+
             SizedBox(height: 20),
+
+
+
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               child: Padding(
                 padding: EdgeInsets.all(10),
                 child: Text(
-                  'This price includes all applicable taxes and fees. Export',
+                  productData?['description'] ?? 'No description available.',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ),
             ),
+
 
             SizedBox(height: 20),
             // Buttons to show the containers
@@ -352,6 +356,7 @@ class _ProductDetailState extends State<ProductDetail> {
               ),
             SizedBox(height: 40),
 
+
             Center(
               child: Column(
                 children: [
@@ -359,10 +364,7 @@ class _ProductDetailState extends State<ProductDetail> {
                     width: 200,
                     child: ElevatedButton(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF033015),
-                        foregroundColor: Color(0xFFFFFFFF),
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015), foregroundColor: Colors.white),
                       child: Text('Add to Cart'),
                     ),
                   ),
@@ -371,34 +373,27 @@ class _ProductDetailState extends State<ProductDetail> {
                     width: 200,
                     child: ElevatedButton(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF033015),
-                        foregroundColor: Color(0xFFFFFFFF),
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015), foregroundColor: Colors.white),
                       child: Text('Buy'),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 80),
+
+            SizedBox(height: 50),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Vendor_ChatScreen(companyName: "Company Name"),
-            ),
-          );
-        },
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Vendor_ChatScreen(companyName: productData?['company'] ?? 'Company Name')),
+        ),
         backgroundColor: Colors.grey,
         child: Icon(Icons.chat, color: Color(0xFF033015)),
         tooltip: 'Message us',
       ),
-
     );
   }
 }

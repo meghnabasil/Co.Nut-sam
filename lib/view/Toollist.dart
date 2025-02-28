@@ -17,7 +17,8 @@ class _ToolsDetailState extends State<ToolsDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Tool Details", style: TextStyle(color: Colors.white)),
+        title: Text("Tool Details", style: TextStyle(color: Colors.white)
+        ),
         backgroundColor: Color(0xFF033015),
         iconTheme: IconThemeData(color: Colors.white),
       ),
