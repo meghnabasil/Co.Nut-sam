@@ -13,7 +13,6 @@ class Session {
     await prefs.setString(_uuidKey, uuid);
   }
 
-
   // Get session data
   static Future<Map<String, String?>> getSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -23,17 +22,17 @@ class Session {
     };
   }
 
-
   // save vendor id
   static Future<void> saveVendor(String vvid) async {
-    SharedPreferences prefs =await SharedPreferences.getInstance();
-    await prefs.setString(_vvidkey, vvid);
-}
-// get vendor data
-  static Future<Map<String,String?>> getVendor() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return{
-      'vid':prefs.getString(_vvidkey),
+    await prefs.setString(_vvidkey, vvid);
+  }
+
+// get vendor data
+  static Future<Map<String, String?>> getVendor() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return {
+      'vid': prefs.getString(_vvidkey),
     };
   }
 

@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+
+import '../controller/session.dart';
 
 class AddProductPage extends StatefulWidget {
   @override
@@ -54,8 +55,9 @@ class _AddProductPageState extends State<AddProductPage> {
     });
 
     try {
-      // Get current vendor ID
-      String? vendorId = FirebaseAuth.instance.currentUser?.uid;
+
+      Map<String, String?> vendorData = await Session.getVendor();
+      String? vendorId = vendorData['vid'];
       if (vendorId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: Vendor not authenticated')),
@@ -75,7 +77,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
       await FirebaseFirestore.instance.collection('products').add({
         'name': _nameController.text,
-        'company': _companyController.text,
+      //  'company': _companyController.text,
         'price': double.parse(_priceController.text),
         'category': _selectedCategory,
         'description': _descriptionController.text,
@@ -195,8 +197,8 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     SizedBox(height: 10),
                     _buildTextField(_nameController, "Product Name"),
-                    SizedBox(height: 10),
-                    _buildTextField(_companyController, "Company Name"),
+                    /*SizedBox(height: 10),
+                    _buildTextField(_companyController, "Company Name"),*/
                     SizedBox(height: 10),
                     _buildTextField(_priceController, "Price"),
                     SizedBox(height: 10),

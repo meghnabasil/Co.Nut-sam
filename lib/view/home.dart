@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dup/model/products_model.dart';
 import 'package:dup/view/Favourites.dart';
 import 'package:dup/view/Tools.dart';
@@ -26,11 +27,13 @@ class _HomeState extends State<Home> {
   String _userEmail = "user@gmail.com";
   int _currentBannerIndex = 0;
   final PageController _pageController = PageController();
+  List<String> carouselImages = [];
 
   @override
   void initState() {
     super.initState();
     _loadUserSession();
+    _fetchAdvertisements();
   }
 
   Future<void> _loadUserSession() async {
@@ -41,13 +44,6 @@ class _HomeState extends State<Home> {
       _userEmail = userDetails?['email'] ?? _userEmail;
     });
   }
-
-  final List<String> carouselImages = [
-    'asset/nut.jpg',
-    'asset/oi.jpg',
-    'asset/tender.jpg',
-  ];
-
   final List<String> companyLogos = [
     'asset/nut.jpg',
     'asset/nut.jpg',
@@ -68,6 +64,27 @@ class _HomeState extends State<Home> {
       MaterialPageRoute(builder: (context) => page),
     );
   }
+
+  Future<void> _fetchAdvertisements() async {
+    try {
+      QuerySnapshot snapshot =
+      await FirebaseFirestore.instance.collection('advertisements').get();
+
+      List<Map<String, String>> ads = snapshot.docs.map((doc) {
+        return {
+          'imageUrl': doc['url'] as String, // Extract image URL
+          'productId': doc['productId'] as String, // Extract product ID
+        };
+      }).toList();
+
+      setState(() {
+        advertisements = ads; // Store as a list of maps
+      });
+    } catch (e) {
+      print("Error fetching advertisements: $e");
+    }
+  }
+
 
   Widget _buildBannerIndicators() {
     return Row(
@@ -148,7 +165,7 @@ class _HomeState extends State<Home> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => UserForm()),
-                        (route) => false,
+                    (route) => false,
                   );
                 } catch (e) {
                   print("Logout error: $e");
@@ -216,8 +233,7 @@ class _HomeState extends State<Home> {
                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child:
-                      Image.asset(logo, height: 50, fit: BoxFit.cover),
+                      child: Image.asset(logo, height: 50, fit: BoxFit.cover),
                     ),
                   );
                 }).toList(),
@@ -281,6 +297,7 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
             // Secondary CarouselSlider
             CarouselSlider(
@@ -292,17 +309,27 @@ class _HomeState extends State<Home> {
                 aspectRatio: 16 / 9,
                 viewportFraction: 0.5,
               ),
-              items: carouselImages.map((imagePath) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: Image.asset(
-                    imagePath,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+              items: carouselImages.map((imageUrl) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductScreen(),
+                        ));
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 );
               }).toList(),
             ),
+
             const SizedBox(height: 70),
             // Clickable Subscribe Card
             Padding(
@@ -311,8 +338,7 @@ class _HomeState extends State<Home> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => Subscription()),
+                    MaterialPageRoute(builder: (context) => Subscription()),
                   );
                 },
                 child: Card(
@@ -334,8 +360,7 @@ class _HomeState extends State<Home> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Icon(Icons.lock_clock,
-                            color: Colors.white, size: 30),
+                        Icon(Icons.lock_clock, color: Colors.white, size: 30),
                         SizedBox(width: 10),
                         Text(
                           'Subscribe Now',
@@ -375,10 +400,14 @@ class _HomeState extends State<Home> {
                 mainAxisSpacing: 50,
                 childAspectRatio: 1.0,
                 children: [
-                  _buildCard(context, 'Coco Products', 'asset/all.webp', ProductScreen()),
-                  _buildCard(context, 'Workers', 'asset/work.webp', WorkersList()),
-                  _buildCard(context, 'On Doorstep', 'asset/delivery.webp', Doorsteps()),
-                  _buildCard(context, 'Tools', 'asset/mach.webp', ListOfTools()),
+                  _buildCard(context, 'Coco Products', 'asset/all.webp',
+                      ProductScreen()),
+                  _buildCard(
+                      context, 'Workers', 'asset/work.webp', WorkersList()),
+                  _buildCard(context, 'On Doorstep', 'asset/delivery.webp',
+                      Doorsteps()),
+                  _buildCard(
+                      context, 'Tools', 'asset/mach.webp', ListOfTools()),
                 ],
               ),
             ),
@@ -387,8 +416,8 @@ class _HomeState extends State<Home> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 1.0),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 30, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(45),
                   gradient: const LinearGradient(
@@ -423,7 +452,8 @@ class _HomeState extends State<Home> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF033015),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(35),
                         ),
@@ -447,13 +477,15 @@ class _HomeState extends State<Home> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF033015),
-                        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 25, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(35),
                         ),
                         elevation: 5,
                       ),
-                      icon: const Icon(Icons.favorite, color: Color(0xFF033015)),
+                      icon:
+                          const Icon(Icons.favorite, color: Color(0xFF033015)),
                       label: const Text(
                         "Favourites",
                         style: TextStyle(
@@ -491,7 +523,9 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-  Widget _buildCard(BuildContext context, String title, String imagePath, Widget page) {
+
+  Widget _buildCard(
+      BuildContext context, String title, String imagePath, Widget page) {
     return GestureDetector(
       onTap: () => _navigateToPage(context, page),
       child: Container(
@@ -507,7 +541,8 @@ class _HomeState extends State<Home> {
           ],
         ),
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 0, // Remove default shadow since we are using a custom one
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -515,7 +550,8 @@ class _HomeState extends State<Home> {
             children: [
               Expanded(
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
                   child: Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
@@ -528,7 +564,8 @@ class _HomeState extends State<Home> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -537,5 +574,4 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
 }

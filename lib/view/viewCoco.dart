@@ -1,6 +1,9 @@
+import 'package:dup/view/AddAdvertisementPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../controller/session.dart';
 
 class ProductDisplayPage extends StatefulWidget {
   @override
@@ -17,13 +20,12 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
     _getCurrentVendor();
   }
 
-  void _getCurrentVendor() {
-    final User? user = _auth.currentUser;
-    if (user != null) {
-      setState(() {
-        currentVendorId = user.uid;
-      });
-    }
+  // Function to get vendorId from session
+  void _getCurrentVendor() async {
+    Map<String, String?> vendorData = await Session.getVendor();
+    setState(() {
+      currentVendorId = vendorData['vid']; // Set the vendor ID
+    });
   }
 
   Future<List<Map<String, dynamic>>> _fetchVendorProducts() async {
@@ -191,7 +193,7 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
                     "Stock: ${product['stock'] ?? 'N/A'}",
                     style: TextStyle(color: Colors.grey[600]),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(width: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -199,7 +201,7 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF033015)),
                           onPressed: () => _showUpdateStockBottomSheet(product),
-                          child: Text("Update Stock", style: TextStyle(color: Colors.white)),
+                          child: Text("Update Stock", style: TextStyle(color: Colors.white,fontSize: 12)),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -208,6 +210,21 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
                           onPressed: () => _deleteProduct(product['id']),
                           child: Text("Delete", style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                      SizedBox(width: 5),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor:  Color(0xFF033015)),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddAdvertisementPage(productId: product['id']),
+                              ),
+                            );
+                          },
+                          child: Text("Add Ads", style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],

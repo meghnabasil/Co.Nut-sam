@@ -1,70 +1,110 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class ToolsDetail extends StatefulWidget {
-  final int toolIndex;
+  final String toolId; // Fetch tool using ID
 
-  ToolsDetail({required this.toolIndex});
+  ToolsDetail({required this.toolId});
 
   @override
   _ToolsDetailState createState() => _ToolsDetailState();
 }
 
 class _ToolsDetailState extends State<ToolsDetail> {
-  String selectedOption = 'Retail';
+  Map<String, dynamic>? toolData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchToolDetails();
+  }
+
+  Future<void> _fetchToolDetails() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('tools')
+          .doc(widget.toolId)
+          .get();
+
+      if (doc.exists) {
+        setState(() {
+          toolData = doc.data() as Map<String, dynamic>;
+        });
+      }
+    } catch (e) {
+      print("Error fetching tool details: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Tool Details", style: TextStyle(color: Colors.white)
-        ),
+        title: Text("Tool Details", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF033015),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: toolData == null
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 20),
             Text(
-              'Tool ' + (widget.toolIndex + 1).toString() + ' - An ideal tool for your tasks!',
+              toolData!['name'] ?? 'Unnamed Tool',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 80),
-            CarouselSlider(
-              items: [
-                'asset/210379377.png',
-                'asset/img1.jpg',
-                'asset/music.jpg'
-              ].map((item) => Image.asset(
-                item,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              )).toList(),
-              options: CarouselOptions(
-                height: 150,
-                enlargeCenterPage: true,
-                enableInfiniteScroll: true,
-                autoPlay: true,
-                autoPlayInterval: Duration(seconds: 5),
-                aspectRatio: 16 / 9,
-                viewportFraction: 0.8,
-              ),
-            ),
-            const SizedBox(height: 60), // Space between Carousel and Divider
-            const Divider(thickness: 2, color: Colors.grey),
-            const SizedBox(height: 10),
+            SizedBox(height: 20),
 
-            Text('Tool Company', style: TextStyle(color: Colors.grey[600])),
+            // **Carousel Slider for Images**
+            if (toolData!['imageUrls'] != null &&
+                toolData!['imageUrls'] is List &&
+                (toolData!['imageUrls'] as List).isNotEmpty)
+              CarouselSlider(
+                items: (toolData!['imageUrls'] as List).map((url) {
+                  return Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  );
+                }).toList(),
+                options: CarouselOptions(
+                  height: 200,
+                  enlargeCenterPage: true,
+                  autoPlay: true,
+                  autoPlayInterval: Duration(seconds: 5),
+                  viewportFraction: 0.8,
+                ),
+              )
+            else
+              Center(
+                child: Icon(Icons.broken_image, size: 80, color: Colors.grey),
+              ),
+
+            SizedBox(height: 20),
+            Divider(thickness: 2, color: Colors.grey),
             SizedBox(height: 10),
+
+            // **Tool Company**
             Text(
-              '₹${(widget.toolIndex + 1) * 20}',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
+              toolData!['company'] ?? 'No Company',
+              style: TextStyle(color: Colors.grey[600]),
             ),
-            // Added description under the price box
+            SizedBox(height: 10),
+
+            // **Price**
+            Text(
+              "₹${toolData!['price']?.toString() ?? 'N/A'}",
+              style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF380230)),
+            ),
+
             SizedBox(height: 5),
             Text(
               'This price includes all applicable taxes and fees.',
@@ -72,6 +112,7 @@ class _ToolsDetailState extends State<ToolsDetail> {
             ),
 
             SizedBox(height: 40),
+
             Row(
               children: [
                 Expanded(

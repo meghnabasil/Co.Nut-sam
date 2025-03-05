@@ -7,7 +7,7 @@ class VendorController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Register Vendor with Existing User UID
-  Future<String?> registerVendor(String businessName, String phone,
+/*  Future<String?> registerVendor(String businessName, String phone,
       String address,
       String city, String businessType, String productCategory,
       List<String> businessModel) async {
@@ -35,7 +35,45 @@ class VendorController {
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
     }
+  }*/
+
+  /// Register Vendor with Existing User UID
+  Future<String?> registerVendor(String businessName, String phone,
+      String address, String city, String businessType, String productCategory,
+      List<String> businessModel) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        return "User not logged in";
+      }
+      DocumentReference vendorDocRef = _firestore.collection("vendors").doc();
+      String vendorId = vendorDocRef.id;
+
+      Vendor vendor = Vendor(
+        uid: user.uid,
+        businessName: businessName,
+        email: user.email!,
+        phone: phone,
+        address: address,
+        city: city,
+        businessType: businessType,
+        productCategory: productCategory,
+        businessModel: businessModel,
+      );
+
+      await _firestore.collection("vendors").doc(vendorId).set(vendor.toMap());
+
+      await _firestore.collection("users").doc(user.uid).update({
+        'vendorId': vendorId,
+        'isVendor': true,
+      });
+
+      return vendorId; // Return vendorId if successful
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
   }
+
 
   /// Fetch Vendor Details
   Future<Vendor?> fetchVendorDetails() async {

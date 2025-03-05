@@ -127,7 +127,7 @@ class _ListOfToolsState extends State<ListOfTools> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ToolsDetail(toolIndex: index),
+                    builder: (context) => ToolsDetail(toolId: tool['id']),
                   ),
                 );
               },

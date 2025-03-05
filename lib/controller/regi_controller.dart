@@ -3,17 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../model/user_model.dart';
 import 'package:dup/controller/session.dart';
 
-
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Register User
-  Future<String?> registerUser(String name, String email,
-      String password) async {
+  Future<String?> registerUser(
+      String name, String email, String password) async {
     try {
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -33,9 +32,8 @@ class AuthController {
     }
   }
 
-
 //login
-  Future<String?> loginUser(String email, String password) async {
+  /* Future<String?> loginUser(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -53,6 +51,40 @@ class AuthController {
         return "User not found"; // Prevents unauthorized logins
       }
       await Session.saveSession(email, userId);
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
+  }
+*/
+  Future<String?> loginUser(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      String userId = userCredential.user!.uid;
+
+      DocumentSnapshot userDoc =
+          await _firestore.collection("users").doc(userId).get();
+
+      if (!userDoc.exists) {
+        return "User not found"; // Prevents unauthorized logins
+      }
+
+      // Check if user is a vendor
+      bool isVendor = userDoc.get("isVendor") ?? false;
+      String? vendorId;
+      if (isVendor) {
+        vendorId = userDoc.get("vendorId");
+        await Session.saveVendor(vendorId!);
+        print('Vendor Id: *********************$vendorId');
+      }
+
+      // Save session
+      await Session.saveSession(email, userId);
+
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message

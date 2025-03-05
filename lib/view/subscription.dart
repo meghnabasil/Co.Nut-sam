@@ -61,7 +61,7 @@ class _SubscriptionState extends State<Subscription> {
                             MaterialPageRoute(
                               builder: (context) => ProductDetail(
                                 productIndex: index,
-                                vendorId: entry.key,
+                              //  vendorId: entry.key,
                                // Assuming the vendorId is the same as the vendor name
                               ),
                             ),

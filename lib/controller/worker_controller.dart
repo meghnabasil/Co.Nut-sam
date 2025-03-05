@@ -23,6 +23,13 @@ class WorkerController {
         city: city,
         description: description,
       );
+/*
+      await _firestore.collection("vendors").doc(vendorId).set(vendor.toMap());
+
+      await _firestore.collection("users").doc(vendorId).update({
+        'vendorId': vendorId,
+        'isVendor': true,
+      });*/
 
       await _firestore.collection("workers").add(worker.toMap());
 
