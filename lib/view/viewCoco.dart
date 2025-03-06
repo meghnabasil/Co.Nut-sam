@@ -24,7 +24,8 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
   void _getCurrentVendor() async {
     Map<String, String?> vendorData = await Session.getVendor();
     setState(() {
-      currentVendorId = vendorData['vid']; // Set the vendor ID
+      currentVendorId = vendorData['vid'];
+      print(currentVendorId);
     });
   }
 

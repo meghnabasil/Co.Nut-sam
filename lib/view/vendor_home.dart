@@ -167,7 +167,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
                 _buildCard(context, "Add Coconut Products", Icons.eco, AddProductPage()),
                 _buildCard(context, "Add Tools", Icons.build,AddToolPage()),
                 _buildCard(context, "Manage Orders", Icons.shopping_basket, ManageOrdersPage()),
-                _buildCard(context, "Add Advertisement", Icons.ondemand_video, AddAdvertisementPage()),
+                //_buildCard(context, "Add Advertisement", Icons.ondemand_video, AddAdvertisementPage()),
               ],
             ),
 

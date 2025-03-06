@@ -63,8 +63,7 @@ class ProductScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ProductDetail(
-                        productIndex: index,
-                        //vendorId: product.vendorId,
+                        productIndex: index.toString(),
                       //
                       ),
                     ),

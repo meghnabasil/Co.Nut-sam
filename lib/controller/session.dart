@@ -66,6 +66,7 @@ class Session {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_emailKey);
     await prefs.remove(_uuidKey);
+    await prefs.remove(_vvidkey);
   }
 }
 

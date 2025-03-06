@@ -4,7 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dup/view/vendormessagescreen.dart';
 
 class ProductDetail extends StatefulWidget {
-  final int productIndex;
+  final String productIndex;
 
   ProductDetail({required this.productIndex});
 
@@ -44,9 +44,9 @@ class _ProductDetailState extends State<ProductDetail> {
     try {
       QuerySnapshot snapshot =
           await FirebaseFirestore.instance.collection('products').get();
-      if (snapshot.docs.isNotEmpty &&
-          widget.productIndex < snapshot.docs.length) {
-        DocumentSnapshot productSnapshot = snapshot.docs[widget.productIndex];
+      if (snapshot.docs.isNotEmpty/* &&
+          widget.productIndex < snapshot.docs.length*/) {
+        DocumentSnapshot productSnapshot = snapshot.docs[int.parse(widget.productIndex)];
 
         if (productSnapshot.exists) {
           setState(() {

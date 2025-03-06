@@ -5,6 +5,7 @@ import 'package:dup/view/Tools.dart';
 import 'package:dup/view/firstpage.dart';
 import 'package:dup/view/login.dart';
 import 'package:dup/view/onDoorstep.dart';
+import 'package:dup/view/productlist.dart';
 import 'package:dup/view/profile.dart';
 import 'package:dup/view/subscription.dart';
 import 'package:dup/view/vendor_home.dart';
@@ -14,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:dup/controller/session.dart';
+
+import '../controller/videoWidget.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -28,7 +31,9 @@ class _HomeState extends State<Home> {
   int _currentBannerIndex = 0;
   final PageController _pageController = PageController();
   List<String> carouselImages = [];
-
+  late List<Map<String, String>> advertisements = [];
+  List<Map<String, String>> imageAdvertisements=[];
+  List<Map<String, String>> videoAdvertisements=[];
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,7 @@ class _HomeState extends State<Home> {
       _userEmail = userDetails?['email'] ?? _userEmail;
     });
   }
+
   final List<String> companyLogos = [
     'asset/nut.jpg',
     'asset/nut.jpg',
@@ -70,21 +76,30 @@ class _HomeState extends State<Home> {
       QuerySnapshot snapshot =
       await FirebaseFirestore.instance.collection('advertisements').get();
 
-      List<Map<String, String>> ads = snapshot.docs.map((doc) {
-        return {
-          'imageUrl': doc['url'] as String, // Extract image URL
-          'productId': doc['productId'] as String, // Extract product ID
-        };
-      }).toList();
+      List<Map<String, String>> imageAds = [];
+      List<Map<String, String>> videoAds = [];
+
+      for (var doc in snapshot.docs) {
+        String imageUrl = doc['imageUrl'] ?? '';
+        String videoUrl = doc['videoUrl'] ?? '';
+        String productId = doc['productId'] as String;
+
+        if (imageUrl.isNotEmpty) {
+          imageAds.add({'imageUrl': imageUrl, 'productId': productId});
+        }
+        if (videoUrl.isNotEmpty) {
+          videoAds.add({'videoUrl': videoUrl, 'productId': productId});
+        }
+      }
 
       setState(() {
-        advertisements = ads; // Store as a list of maps
+        imageAdvertisements = imageAds;
+        videoAdvertisements = videoAds;
       });
     } catch (e) {
       print("Error fetching advertisements: $e");
     }
   }
-
 
   Widget _buildBannerIndicators() {
     return Row(
@@ -250,27 +265,41 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 35),
-            // Main CarouselSlider
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 200,
-                autoPlay: true,
-                autoPlayInterval: const Duration(seconds: 23),
-                enlargeCenterPage: true,
-                aspectRatio: 16 / 9,
-                viewportFraction: 0.9,
+
+            if (imageAdvertisements.isNotEmpty) ...[
+              Text("Images", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              CarouselSlider(
+                options: CarouselOptions(
+                  height: 200,
+                  autoPlay: true,
+                  autoPlayInterval: Duration(seconds: 3),
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                  viewportFraction: 0.9,
+                ),
+                items: imageAdvertisements.map((ad) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetail(productIndex: ad['productId']!),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: Image.network(
+                        ad['imageUrl']!,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              items: carouselImages.map((imagePath) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: Image.asset(
-                    imagePath,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                );
-              }).toList(),
-            ),
+            ],
             const SizedBox(height: 50),
             // Row of buttons
             Padding(
@@ -300,36 +329,25 @@ class _HomeState extends State<Home> {
 
             const SizedBox(height: 20),
             // Secondary CarouselSlider
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 200,
-                autoPlay: true,
-                autoPlayInterval: const Duration(seconds: 3),
-                enlargeCenterPage: true,
-                aspectRatio: 16 / 9,
-                viewportFraction: 0.5,
-              ),
-              items: carouselImages.map((imageUrl) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductScreen(),
-                        ));
-                  },
-                  child: ClipRRect(
+            if (videoAdvertisements.isNotEmpty) ...[
+              Text("Videos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              CarouselSlider(
+                options: CarouselOptions(
+                  height: 200,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                  viewportFraction: 0.9,
+                ),
+                items: videoAdvertisements.map((ad) {
+                  return ClipRRect(
                     borderRadius: BorderRadius.circular(13),
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-
+                    child: VideoWidget(videoUrl: ad['videoUrl']!),
+                  );
+                }).toList(),
+              ),
+            ],
             const SizedBox(height: 70),
             // Clickable Subscribe Card
             Padding(

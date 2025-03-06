@@ -29,7 +29,7 @@ class _SubscriptionState extends State<Subscription> {
         child: Center(
           child: Column(
             children: vendorSubscriptions.entries.map((entry) {
-              int index = vendorSubscriptions.entries.toList().indexOf(entry); // Get index for each vendor
+              int index = vendorSubscriptions.entries.toList().indexOf(entry);
               return Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -60,7 +60,7 @@ class _SubscriptionState extends State<Subscription> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ProductDetail(
-                                productIndex: index,
+                                productIndex: index.toString(),
                               //  vendorId: entry.key,
                                // Assuming the vendorId is the same as the vendor name
                               ),
