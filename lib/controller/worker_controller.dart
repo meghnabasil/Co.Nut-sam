@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/controller/session.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/worker_model.dart';
 
@@ -15,25 +16,27 @@ class WorkerController {
         return "User not logged in";
       }
 
+      DocumentReference workerDocRef = _firestore.collection("workers").doc();
+      String workerId = workerDocRef.id;
+
       Worker worker = Worker(
-        uid: user.uid, // Using the same user ID
+        uid: user.uid,
         workerName: workerName,
         jobTitle: jobTitle,
-        phone: phone,
-        city: city,
+        wphone: phone,
+        wcity: city,
         description: description,
       );
-/*
-      await _firestore.collection("vendors").doc(vendorId).set(vendor.toMap());
 
-      await _firestore.collection("users").doc(vendorId).update({
-        'vendorId': vendorId,
-        'isVendor': true,
-      });*/
+      await workerDocRef.set(worker.toMap());
+      await _firestore.collection("users").doc(user.uid).set({
+        'workerId': workerId,
+        'isWorker': true,
+      }, SetOptions(merge: true));
 
-      await _firestore.collection("workers").add(worker.toMap());
+      await Session.saveVendor(workerId);
 
-      return null; // Success
+      return null;
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
     }

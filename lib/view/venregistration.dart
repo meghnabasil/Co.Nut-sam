@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dup/controller/session.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../controller/vendor_controller.dart';
@@ -22,6 +23,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   List<String> selectedBusinessTypes = [];
   File? businessLogo;
   bool agreedToTerms = false;
+  String profile='https://firebasestorage.googleapis.com/v0/b/dup-a79d6.firebasestorage.app/o/vendor.png?alt=media&token=d23a70e6-8f35-49ad-96d4-ee3946304bbe';
 
   /// Pick Image from Gallery
   Future<void> _pickImage() async {
@@ -35,10 +37,29 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
     }
   }
 
+  Future<String?> _uploadImage(File imageFile) async {
+    try {
+      Reference ref = FirebaseStorage.instance.ref().child('vendor_logos/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      UploadTask uploadTask = ref.putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      return null;
+    }
+  }
+
+
   /// Save Vendor Data
   Future<void> _saveVendor() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      if (businessLogo != null) {
+        String? uploadedImageUrl = await _uploadImage(businessLogo!);
+        if (uploadedImageUrl != null) {
+          profile = uploadedImageUrl;
+        }
+      }
 
       String? vendorID = await _vendorController.registerVendor(
         businessName,
@@ -48,6 +69,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         businessType,
         productCategory,
         selectedBusinessTypes,
+        profile,
       );
       print(vendorID);
       if (vendorID != null && !vendorID.contains("User not logged in")) {

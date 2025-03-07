@@ -1,293 +1,6 @@
-/*
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dup/view/editprofile.dart';
-import 'package:dup/model/user_model.dart';
-import 'package:dup/view/venregistration.dart';
-import 'package:dup/view/workerRegistration.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-
-class ProfilePage extends StatefulWidget {
-  @override
-  _ProfilePageState createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  String name = "";
-  String email = "";
-  String profileImage = 'asset/210379377.png';
-
-  bool isVendor = false; // Toggle state for Vendor
-  bool isWorker = false; // Toggle state for Worker
-
-  final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        profileImage = pickedFile.path;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserProfile();
-  }
-
-  Future<void> _loadUserProfile() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
-      if (userDoc.exists) {
-        UserModel userModel = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
-        setState(() {
-          name = userModel.name;
-          email = userModel.email;
-        });
-      }
-    }
-  }
-
-  String getActiveStatus() {
-    if (isVendor) {
-      return "Active as Vendor";
-    } else if (isWorker) {
-      return "Active as Worker";
-    } else {
-      return "Hello Customers";
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        toolbarHeight: 60,
-        backgroundColor: const Color(0xFF033015),
-        title: const Text(
-          "Profile",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Profile Picture
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: FileImage(File(profileImage)),
-                    child: profileImage.isEmpty
-                        ? const Icon(Icons.camera_alt, color: Colors.white)
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Name
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF033015),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-
-                // Email
-                Text(
-                  email,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-
-                // Edit Profile Button
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context, MaterialPageRoute(builder: (context) => Editprofile()));
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(const Color(0xFF033015)),
-                    foregroundColor: MaterialStateProperty.all(Colors.white),
-                  ),
-                  child: const Text('Edit Profile'),
-                ),
-
-                const SizedBox(height: 50),
-
-                // Active Status Bar
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 90),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Text(
-                    getActiveStatus(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 45),
-                const Divider(thickness: 2, color:  Color(0xFF033015)),
-
-                const SizedBox(height: 50),
-               Card(
-                color: Color(0xFF033015),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                padding: const EdgeInsets.all(16.0),
-               child: Column(
-               children: [
-                // Vendor Registration Card
-                Card(
-                  elevation: 6,
-                  shadowColor: Colors.green,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  margin: const EdgeInsets.symmetric(horizontal: 30, vertical:5),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Vendor Heading
-                        const Text(
-                          "Sell your products 🛒",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF033015),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        // How to Choose Vendor
-                        const Text(
-                          "If you own a business selling coconut products like fresh coconuts, oil, coir, or snacks, register as a Vendor.",
-                          style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
-                        ),
-                        const SizedBox(height: 15),
-
-                        // Toggle & Button for Vendor
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Switch to vendor", style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold)),
-                            Switch(
-                              value: isVendor,
-                              onChanged: (value) {
-                                setState(() {
-                                  isVendor = value;
-                                  isWorker = false; // Disable Worker if Vendor is selected
-                                });
-                                if (value) {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => VendorRegisterScreen()));
-                                }
-                              },
-                              activeColor: Colors.green,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
-                // Worker Registration Card
-                Card(
-                  elevation: 6,
-                  shadowColor: Colors.green,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Worker Heading
-                        const Text(
-                          " Work and Earn 🔧",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF033015),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-
-                        // How to Choose Worker
-                        const Text(
-                          "If you're skilled in coconut-related work like farming, shell crafting, coir processing, or delivery, register as a Worker.",
-                          style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black54),
-                        ),
-                        const SizedBox(height: 15),
-
-                        // Toggle & Button for Worker
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Switch to Worker", style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
-                            Switch(
-                              value: isWorker,
-                              onChanged: (value) {
-                                setState(() {
-                                  isWorker = value;
-                                  isVendor = false; // Disable Vendor if Worker is selected
-                                });
-                                if (value) {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddWorkerScreen()));
-                                }
-                              },
-                              activeColor: Colors.green,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],),
-    ),
-      ),
-    ),
-    );
-  }
-}
-*/
-
-import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/controller/session.dart';
 import 'package:dup/view/editprofile.dart';
 import 'package:dup/model/user_model.dart';
 import 'package:dup/view/venregistration.dart';
@@ -318,6 +31,12 @@ class _ProfilePageState extends State<ProfilePage> {
   String? phone;
   String? productCategory;
 
+  String? workerName;
+  String? jobTitle;
+  String? wphone;
+  String? wcity;
+  String? description;
+
   @override
   void initState() {
     super.initState();
@@ -327,45 +46,101 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadUserProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
 
       if (userDoc.exists) {
-        UserModel userModel = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+        print("User Document Data: ${userDoc.data()}"); // Debugging
+
+        UserModel userModel =
+            UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
 
         setState(() {
           name = userModel.name;
           email = userModel.email;
+          profileImage = userModel.profileImage;
           isVendor = userModel.isVendor ?? false;
           isWorker = userModel.isWorker ?? false;
         });
-        String vendorId = userDoc['vendorId'];
-        print(vendorId);
+        print('Is Vendor: $isVendor');
+
         if (isVendor) {
-          await _loadVendorDetails(vendorId);
+          Map<String, String?> vendorData = await Session.getVendor();
+          String? vendorId = vendorData['vid']; // Get vendor ID from session
+
+          if (vendorId != null && vendorId.isNotEmpty) {
+            print("Vendor ID found: $vendorId");
+            await _loadVendorDetails(vendorId);
+          } else {
+            print("Vendor ID not found in session");
+          }
+        }
+
+        String? workerId = userDoc['workerId'];
+        if (workerId != null && workerId.isNotEmpty) {
+          print("Worker ID found: $workerId");
+          await _loadWorkerDetails(workerId);
         }
       }
     }
   }
 
-  Future<void> _loadVendorDetails(String vendorId) async {
-    print("Vendor iD: *&&&&&&&&&&&&&&&********.....$vendorId");
-    DocumentSnapshot vendorDoc = await FirebaseFirestore.instance.collection("vendors").doc(vendorId).get();
+  Future<void> _loadWorkerDetails(String workerId) async {
+    print("Fetching worker details for ID: $workerId");
 
-    if (vendorDoc.exists) {
-      Map<String, dynamic> vendorData = vendorDoc.data() as Map<String, dynamic>;
+    DocumentSnapshot workerDoc = await FirebaseFirestore.instance
+        .collection("workers")
+        .doc(workerId)
+        .get();
 
-      setState(() {
-        vendorAddress = vendorData['address'] ?? '';
-        businessModel = vendorData['businessModel'] ?? [];
-        businessName = vendorData['businessName'] ?? '';
-        businessType = vendorData['businessType'] ?? '';
-        city = vendorData['city'] ?? '';
-        vendorEmail = vendorData['email'] ?? '';
-        imageUrl = vendorData['imageUrl'] ?? '';
-        phone = vendorData['phone'] ?? '';
-        productCategory = vendorData['productCategory'] ?? '';
-      });
+    if (!workerDoc.exists) {
+      print("Worker document does not exist!");
+      return;
     }
+
+    Map<String, dynamic> workerData = workerDoc.data() as Map<String, dynamic>;
+    print("Worker Data: $workerData");
+
+    setState(() {
+      workerName = workerData['workerName'] ?? '';
+      jobTitle = workerData['jobTitle'] ?? '';
+      wphone = workerData['phone'] ?? '';
+      wcity = workerData['city'] ?? '';
+      description = workerData['description'] ?? '';
+    });
+  }
+
+  Future<void> _loadVendorDetails(String vendorId) async {
+    print("Fetching vendor details for ID: $vendorId");
+
+    DocumentSnapshot vendorDoc = await FirebaseFirestore.instance
+        .collection("vendors")
+        .doc(vendorId)
+        .get();
+
+    if (!vendorDoc.exists) {
+      print("Vendor document does not exist!");
+      return;
+    }
+
+    Map<String, dynamic> vendorData = vendorDoc.data() as Map<String, dynamic>;
+    print("Vendor Data: $vendorData"); // Debugging
+
+    setState(() {
+      vendorAddress = vendorData['address'] ?? '';
+      businessModel = vendorData['businessModel'] != null
+          ? List<String>.from(vendorData['businessModel'])
+          : [];
+      businessName = vendorData['businessName'] ?? '';
+      businessType = vendorData['businessType'] ?? '';
+      city = vendorData['city'] ?? '';
+      vendorEmail = vendorData['email'] ?? '';
+      imageUrl = vendorData['imageUrl'] ?? '';
+      phone = vendorData['phone'] ?? '';
+      productCategory = vendorData['productCategory'] ?? '';
+    });
   }
 
   @override
@@ -383,15 +158,21 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               children: [
                 CircleAvatar(
-                  radius: 50,
-                  backgroundImage: FileImage(File(profileImage)),
-                ),
+                    radius: 50,
+                    backgroundImage: /*profileImage.isNotEmpty
+                      ?*/
+                        NetworkImage(profileImage)
+                    // : AssetImage('assets/default_avatar.png') as ImageProvider,
+                    ),
                 const SizedBox(height: 20),
-                Text(name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold)),
                 Text(email, style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Editprofile())),
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Editprofile())),
                   child: const Text('Edit Profile'),
                 ),
                 const SizedBox(height: 20),
@@ -402,41 +183,58 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    isVendor ? "Active as Vendor" : isWorker ? "Active as Worker" : "Hello Customers",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                    isVendor
+                        ? "Active as Vendor"
+                        : isWorker
+                            ? "Active as Worker"
+                            : "Hello Customers",
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
                 ),
                 const SizedBox(height: 20),
                 if (isVendor)
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.green), borderRadius: BorderRadius.circular(10)),
-                    child:
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Business Name: $businessName"),
-                        Text("Business Type: $businessType"),
-                        Text("City: $city"),
-                        Text("Email: $vendorEmail"),
-                        Text("Phone: $phone"),
-                        Text("Product Category: $productCategory"),
-                        Text("Business Model: ${businessModel?.join(', ')}"),
-                        imageUrl != null
-                            ? Image.network(imageUrl!, height: 100, width: 100)
-                            : Text("No Image Available"),
-                      ],
-                    )
-
-                  ),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.green),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Business Name: $businessName"),
+                          Text("Business Type: $businessType"),
+                          Text("City: $city"),
+                          Text("Email: $vendorEmail"),
+                          Text("Phone: $phone"),
+                          Text("Product Category: $productCategory"),
+                          Text("Business Model: ${businessModel?.join(', ')}"),
+                          imageUrl != null
+                              ? Image.network(imageUrl!,
+                                  height: 100, width: 100)
+                              : Text("No Image Available"),
+                        ],
+                      )),
                 if (isWorker)
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.green), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Worker Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("Your worker profile is active."),
+                        const Text("Worker Details",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text("Full Name: $workerName"),
+                        Text("Job Title: $jobTitle"),
+                        Text("City: $wcity"),
+                        Text("Phone: $wphone"),
+                        Text("Discription: $description"),
                       ],
                     ),
                   ),
@@ -447,9 +245,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     const Text("Switch to Vendor"),
                     Switch(
                       value: isVendor,
-                      onChanged: isVendor || isWorker ? null : (value) {
-                        if (value) Navigator.push(context, MaterialPageRoute(builder: (context) => VendorRegisterScreen()));
-                      },
+                      onChanged: isVendor || isWorker
+                          ? null
+                          : (value) {
+                              if (value)
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            VendorRegisterScreen()));
+                            },
                     ),
                   ],
                 ),
@@ -459,9 +264,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     const Text("Switch to Worker"),
                     Switch(
                       value: isWorker,
-                      onChanged: isWorker || isVendor ? null : (value) {
-                        if (value) Navigator.push(context, MaterialPageRoute(builder: (context) => AddWorkerScreen()));
-                      },
+                      onChanged: isWorker || isVendor
+                          ? null
+                          : (value) {
+                              if (value)
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddWorkerScreen(workerName: name )));
+                            },
                     ),
                   ],
                 ),

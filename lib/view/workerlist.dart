@@ -61,7 +61,7 @@ class _WorkersListState extends State<WorkersList> {
                 }).where((worker) {
                   return worker.workerName.toLowerCase().contains(searchQuery) ||
                       worker.jobTitle.toLowerCase().contains(searchQuery) ||
-                      worker.city.toLowerCase().contains(searchQuery); // Added city filter
+                      worker.wcity.toLowerCase().contains(searchQuery); // Added city filter
                 }).toList();
 
 
@@ -115,12 +115,12 @@ class _WorkersListState extends State<WorkersList> {
                                       ),
                                     ),
                                     SizedBox(height: 9),
-                                    Text("City: ${worker.city}"),
+                                    Text("City: ${worker.wcity}"),
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          launchUrl(Uri.parse('tel:${worker.phone}'));
+                                          launchUrl(Uri.parse('tel:${worker.wphone}'));
                                         },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Color(0xFF033015),
@@ -191,7 +191,7 @@ class _WorkersListState extends State<WorkersList> {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  launchUrl(Uri.parse('tel:${worker.phone}'));
+                                  launchUrl(Uri.parse('tel:${worker.wphone}'));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Color(0xFF033015),

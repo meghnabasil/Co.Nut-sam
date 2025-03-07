@@ -12,7 +12,6 @@ import 'package:dup/view/vendor_manage_order.dart';
 import 'package:dup/view/vendor_mange_subscription.dart';
 import 'package:dup/view/vendor_profile.dart';
 import 'package:dup/view/vendor_viewproduct.dart';
-import 'package:dup/view/viewCoco.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -91,7 +90,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
         centerTitle: true,
       ),
       // Added Drawer without changing existing code.
-      drawer: _buildDrawer(context),
+     // drawer: _buildDrawer(context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -8,10 +8,10 @@ class Vendor {
   String businessType;
   String productCategory;
   List<String> businessModel;
-  String? imageUrl;
+  String imageUrl;
 
   Vendor({
-    required this.uid,  // Ensure UID is required
+    required this.uid,
     required this.businessName,
     required this.email,
     required this.phone,
@@ -20,7 +20,7 @@ class Vendor {
     required this.businessType,
     required this.productCategory,
     required this.businessModel,
-    this.imageUrl,
+    required this.imageUrl,
   });
 
   // Convert Vendor object to Map (for Firebase)

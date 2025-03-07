@@ -2,16 +2,16 @@ class Worker {
   String uid; // Add the UID field
   String workerName;
   String jobTitle;
-  String phone;
-  String city;
+  String wphone;
+  String wcity;
   String description;
 
   Worker({
     required this.uid, // Ensure UID is required
     required this.workerName,
     required this.jobTitle,
-    required this.phone,
-    required this.city,
+    required this.wphone,
+    required this.wcity,
     required this.description,
   });
 
@@ -21,8 +21,8 @@ class Worker {
       'uid': uid, // Store UID in Firestore
       'workerName': workerName,
       'jobTitle': jobTitle,
-      'phone': phone,
-      'city': city,
+      'phone': wphone,
+      'city': wcity,
       'description': description,
     };
   }
@@ -33,8 +33,8 @@ class Worker {
         uid: map['uid'] ?? '', // Provide default value
         workerName: map['workerName'] ?? 'Unknown',
         jobTitle: map['jobTitle'] ?? 'Unknown',
-        phone: map['phone'] ?? 'Unknown',
-        city: map['city'] ?? 'Unknown',
+        wphone: map['phone'] ?? 'Unknown',
+        wcity: map['city'] ?? 'Unknown',
         description: map['description'] ?? 'No description',
     );
   }

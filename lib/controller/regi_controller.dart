@@ -72,7 +72,6 @@ class AuthController {
       if (!userDoc.exists) {
         return "User not found"; // Prevents unauthorized logins
       }
-
       // Check if user is a vendor
       bool isVendor = userDoc.get("isVendor") ?? false;
       String? vendorId;
@@ -80,6 +79,15 @@ class AuthController {
         vendorId = userDoc.get("vendorId");
         await Session.saveVendor(vendorId!);
         print('Vendor Id: *********************$vendorId');
+      }
+
+      // Check if user is a worker
+      bool isWorker = userDoc.get("isWorker") ?? false;
+      String? workerId;
+      if (isWorker) {
+        workerId = userDoc.get("workerId");
+        await Session.saveVendor(workerId!);
+        print('Vendor Id: *********************$workerId');
       }
 
       // Save session

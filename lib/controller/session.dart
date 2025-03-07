@@ -70,4 +70,3 @@ class Session {
   }
 }
 
-//home page

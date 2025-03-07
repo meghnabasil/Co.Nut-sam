@@ -28,12 +28,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   String _userName = "User name";
   String _userEmail = "user@gmail.com";
+  bool _isVendor = false;
   int _currentBannerIndex = 0;
   final PageController _pageController = PageController();
   List<String> carouselImages = [];
   late List<Map<String, String>> advertisements = [];
-  List<Map<String, String>> imageAdvertisements=[];
-  List<Map<String, String>> videoAdvertisements=[];
+  List<Map<String, String>> imageAdvertisements = [];
+  List<Map<String, String>> videoAdvertisements = [];
+
   @override
   void initState() {
     super.initState();
@@ -44,10 +46,30 @@ class _HomeState extends State<Home> {
   Future<void> _loadUserSession() async {
     Map<String, dynamic>? userDetails = await Session.getUserDetails();
 
-    setState(() {
+    /*setState(() {
       _userName = userDetails?['name'] ?? _userName;
       _userEmail = userDetails?['email'] ?? _userEmail;
-    });
+    });*/
+
+    if (userDetails != null) {
+      setState(() {
+        _userName = userDetails['name'] ?? _userName;
+        _userEmail = userDetails['email'] ?? _userEmail;
+      });
+
+      // Fetch user's isVendor status from Firestore
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      if (userId.isNotEmpty) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          setState(() {
+            _isVendor = userDoc['isVendor'] ?? false;
+          });
+        }
+      }
+    }
+
+
   }
 
   final List<String> companyLogos = [
@@ -74,7 +96,7 @@ class _HomeState extends State<Home> {
   Future<void> _fetchAdvertisements() async {
     try {
       QuerySnapshot snapshot =
-      await FirebaseFirestore.instance.collection('advertisements').get();
+          await FirebaseFirestore.instance.collection('advertisements').get();
 
       List<Map<String, String>> imageAds = [];
       List<Map<String, String>> videoAds = [];
@@ -169,6 +191,19 @@ class _HomeState extends State<Home> {
                 Navigator.pop(context);
               },
             ),
+            if (_isVendor) // Show only if user is a vendor
+              ListTile(
+                leading: const Icon(Icons.house, color: Colors.black),
+                title: const Text("Vendor dashboard"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VendorDashboard(),
+                    ),
+                  );
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text("Log Out"),
@@ -265,41 +300,27 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 35),
-
-            if (imageAdvertisements.isNotEmpty) ...[
-              Text("Images", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            if (videoAdvertisements.isNotEmpty) ...[
+              //  Text("Videos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
                   height: 200,
                   autoPlay: true,
-                  autoPlayInterval: Duration(seconds: 3),
+                  autoPlayInterval: Duration(seconds: 20),
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
                   viewportFraction: 0.9,
                 ),
-                items: imageAdvertisements.map((ad) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetail(productIndex: ad['productId']!),
-                        ),
-                      );
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(13),
-                      child: Image.network(
-                        ad['imageUrl']!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                items: videoAdvertisements.map((ad) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: VideoWidget(videoUrl: ad['videoUrl']!),
                   );
                 }).toList(),
               ),
             ],
+
             const SizedBox(height: 50),
             // Row of buttons
             Padding(
@@ -309,7 +330,7 @@ class _HomeState extends State<Home> {
                 children: [
                   _buildButton('Worker', WorkersList()),
                   _buildButton('Sell', Subscription()),
-                  _buildButton('Products', VendorDashboard()),
+                  //  _buildButton('Products', VendorDashboard()),
                 ],
               ),
             ),
@@ -329,21 +350,38 @@ class _HomeState extends State<Home> {
 
             const SizedBox(height: 20),
             // Secondary CarouselSlider
-            if (videoAdvertisements.isNotEmpty) ...[
-              Text("Videos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+            if (imageAdvertisements.isNotEmpty) ...[
+              //Text("Images", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
                   height: 200,
                   autoPlay: true,
+                  autoPlayInterval: Duration(seconds: 3),
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
                   viewportFraction: 0.9,
                 ),
-                items: videoAdvertisements.map((ad) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(13),
-                    child: VideoWidget(videoUrl: ad['videoUrl']!),
+                items: imageAdvertisements.map((ad) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProductDetail(productIndex: ad['productId']!),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: Image.network(
+                        ad['imageUrl']!,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   );
                 }).toList(),
               ),

@@ -6,41 +6,11 @@ class VendorController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Register Vendor with Existing User UID
-/*  Future<String?> registerVendor(String businessName, String phone,
-      String address,
-      String city, String businessType, String productCategory,
-      List<String> businessModel) async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) {
-        return "User not logged in";
-      }
-
-      Vendor vendor = Vendor(
-        uid: user.uid,
-        businessName: businessName,
-        email: user.email!,
-        phone: phone,
-        address: address,
-        city: city,
-        businessType: businessType,
-        productCategory: productCategory,
-        businessModel: businessModel,
-      );
-
-      DocumentReference docRef = await _firestore.collection("vendors").add(vendor.toMap());
-
-      return docRef.id; // Success
-    } on FirebaseAuthException catch (e) {
-      return e.message; // Return error message
-    }
-  }*/
 
   /// Register Vendor with Existing User UID
   Future<String?> registerVendor(String businessName, String phone,
       String address, String city, String businessType, String productCategory,
-      List<String> businessModel) async {
+      List<String> businessModel, String profile) async {
     try {
       User? user = _auth.currentUser;
       if (user == null) {
@@ -59,6 +29,7 @@ class VendorController {
         businessType: businessType,
         productCategory: productCategory,
         businessModel: businessModel,
+        imageUrl: profile,
       );
 
       await _firestore.collection("vendors").doc(vendorId).set(vendor.toMap());
@@ -68,7 +39,7 @@ class VendorController {
         'isVendor': true,
       });
 
-      return vendorId; // Return vendorId if successful
+      return vendorId;
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
     }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../controller/worker_controller.dart';
 
 class AddWorkerScreen extends StatefulWidget {
+  final String workerName;
+  AddWorkerScreen({required this.workerName});
+
   @override
   _AddWorkerScreenState createState() => _AddWorkerScreenState();
 }
@@ -10,11 +13,18 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   final _formKey = GlobalKey<FormState>();
   final WorkerController _workerController = WorkerController();
 
-  String workerName = '';
+  late String worker;
   String jobTitle = '';
   String description = '';
   String phone = '';
   String city = '';
+
+  @override
+  void initState() {
+    super.initState();
+    worker = widget.workerName;
+  }
+
 
   /// Save Worker Data
   Future<void> _saveWorker() async {
@@ -22,7 +32,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
       _formKey.currentState!.save();
 
       String? errorMessage = await _workerController.registerWorker(
-        workerName,
+        worker,
         jobTitle,
         phone,
         city,
@@ -61,10 +71,10 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   // Worker Name
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Worker Name'),
+                    initialValue: worker,
+                    readOnly: true,
                     validator: (value) => value!.isEmpty ? "Enter worker name" : null,
-                    onSaved: (value) => workerName = value!,
                   ),
-
                   // Job Title
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Job Title'),
