@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dup/controller/regi_controller.dart';
 
+import 'login.dart';
+
 class Regi extends StatefulWidget {
   const Regi({super.key});
 
@@ -42,6 +44,16 @@ class _RegiState extends State<Regi> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Registration Successful")),
         );
+
+
+        //  Delay navigation slightly
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) =>UserForm()),
+          );
+        });
+
         print('User Registered: ${_nameController.text}, ${_emailController.text}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dup/view/vendormessagescreen.dart';
+
+import '../controller/fav_controller.dart';
+import '../model/fav_model.dart';
 
 class ProductDetail extends StatefulWidget {
   final String productIndex;
@@ -18,7 +22,10 @@ class _ProductDetailState extends State<ProductDetail> {
   bool isFavorite = false;
   int quantity = 1;
   List<String> imageUrls = [];
+  List<String> cart = [];
   List<Map<String, dynamic>> products = [];
+  String? userId = FirebaseAuth.instance.currentUser?.uid; // Get logged-in user
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Flags to toggle visibility of containers
   bool showExportDetails = false;
@@ -70,6 +77,10 @@ class _ProductDetailState extends State<ProductDetail> {
       print("Error fetching product: $e");
     }
   }
+
+
+
+
   Future<void> fetchVendorDetails(String vendorId) async {
     print(vendorId);
     try {
@@ -112,7 +123,69 @@ class _ProductDetailState extends State<ProductDetail> {
       },
     );
   }
-  void toggleFavorite() => setState(() => isFavorite = !isFavorite);
+
+  /// Check if product is in favorites
+  Future<void> checkFavoriteStatus() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) return;
+
+      DocumentSnapshot favSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('favorites')
+          .doc(widget.productIndex)
+          .get();
+
+      setState(() {
+        isFavorite = favSnapshot.exists;
+      });
+    } catch (e) {
+      print("Error checking favorite status: $e");
+    }
+  }
+
+  Future<void> toggleFavorite() async {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final User? user = _auth.currentUser;
+    if (user == null) {
+      print("User not logged in");
+      return;
+    }
+
+    String uid = user.uid;
+    CollectionReference favoritesCollection =
+    FirebaseFirestore.instance.collection('favorites').doc(uid).collection('items');
+
+    if (isFavorite) {
+      // Remove from favorites
+      await favoritesCollection.doc(widget.productIndex).delete();
+      setState(() {
+        isFavorite = false;
+      });
+    } else {
+      // Add to favorites
+      await favoritesCollection.doc(widget.productIndex).set({
+        'productId': widget.productIndex,
+        'productName': productData?['name'], // Ensure correct field names
+        'imageUrl': imageUrls.isNotEmpty ? imageUrls[0] : '',
+        'vendorId': vendorId,
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+      setState(() {
+        isFavorite = true;
+      });
+    }
+  }
+
+  void addToCart(String productName) {
+    setState(() {
+      cart.add(productName);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$productName added to cart!')),
+    );
+  }
 
   // Function to update the price based on the selected plan
   void updatePrice() {
@@ -186,18 +259,21 @@ class _ProductDetailState extends State<ProductDetail> {
 
                   SizedBox(height: 10),
 
+                  // Favorite Button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
                         icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.red,
-                            size: 30),
-                        onPressed: toggleFavorite,
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.red,
+                          size: 30,
+                        ),
+                        onPressed: toggleFavorite, //  Corrected function call
                       ),
                     ],
                   ),
+
 
                   Divider(thickness: 2, color: Colors.brown),
                   SizedBox(height: 10),
@@ -205,7 +281,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   GestureDetector(
                      onTap:() => showVendorDetailsPopup() ,
                     child: Text(
-                      "Vendor: $vendorName",
+                      "Company: $vendorName",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -450,8 +526,9 @@ class _ProductDetailState extends State<ProductDetail> {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => Vendor_ChatScreen(
-                  companyName: productData?['company'] ?? 'Company Name')),
+              builder: (context) => ChatScreen(
+                  businessName: productData?['company'] ?? 'Company Name',vendorId: vendorId ?? 'Unknown',
+              ))
         ),
         backgroundColor: Colors.grey,
         child: Icon(Icons.chat, color: Color(0xFF033015)),

@@ -15,6 +15,8 @@ import 'package:dup/view/vendor_viewproduct.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../model/vendor_model.dart';
+
 class VendorDashboard extends StatefulWidget {
   const VendorDashboard({Key? key}) : super(key: key);
 
@@ -26,41 +28,43 @@ class _VendorDashboardState extends State<VendorDashboard> {
   String? vendorId;
   String vendorName = "Vendor Name";
   String vendorEmail = "vendor@example.com";
+  String vendorLogo = "assets/profile.jpg"; // Default image
 
   @override
   void initState() {
     super.initState();
     fetchVendorDetails();
   }
-
   Future<void> fetchVendorDetails() async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    if (user == null) return;
+
+    DocumentSnapshot vendorDoc = await FirebaseFirestore.instance
+        .collection("vendors")
+        .doc(user.uid)
+        .get();
+
+    if (vendorDoc.exists) {
+      print("Vendor Document Data: ${vendorDoc.data()}"); // Debugging
+
+      Vendor vendor = Vendor.fromMap(vendorDoc.data() as Map<String, dynamic>);
+
       setState(() {
         vendorId = user.uid;
+        vendorEmail = user.email ?? "vendor@example.com";
+        vendorName = vendor.businessName;
+        vendorLogo = vendor.imageUrl ?? "assets/profile.jpg";
+
       });
 
-      try {
-        DocumentSnapshot vendorDoc = await FirebaseFirestore.instance
-            .collection('vendors')
-            .doc(user.uid)
-            .get();
+      print('Vendor Name: $vendorName');
 
-        if (vendorDoc.exists) {
-          print("Vendor Document Data: ${vendorDoc.data()}"); // Debugging line
-
-          setState(() {
-            vendorName = vendorDoc['businessName'] ?? "Vendor Name";
-            vendorEmail = vendorDoc['email'] ?? "vendor@example.com";
-          });
-        } else {
-          print("Vendor document does not exist for UID: ${user.uid}");
-        }
-      } catch (e) {
-        print("Error fetching vendor details: $e");
-      }
+    } else {
+      print("Vendor document does not exist");
     }
   }
+
+
 
 
 
@@ -159,7 +163,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
               mainAxisSpacing: 16,
               childAspectRatio: 1.1,
               children: [
-                _buildCard(context, "Add Subscription", Icons.lock_clock, Subscription()),
+               // _buildCard(context, "Add Subscription", Icons.lock_clock, Subscription()),
                 _buildCard(context, "Manage Subscription", Icons.list_alt,VendorMangeSubscription ()),
                 _buildCard(context, "Doorstep Delivery", Icons.delivery_dining, AddDoorstepDelivery()),
                 _buildCard(context, "Manage Bookings", Icons.calendar_today, ManageBookingPage()),
@@ -177,54 +181,48 @@ class _VendorDashboardState extends State<VendorDashboard> {
     );
   }
 
+
   // Vendor Profile Card
   Widget _buildProfileCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (vendorId != null) {
-          _navigateToPage(
-              context, VendorProfilePage(vendorId: vendorId!));
-        } else {
-          print("Error: Vendor ID is null");
-        }
-      },
-      child: Card(
-        shadowColor: Colors.green,
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: const Color(0xFF033015),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage("assets/profile.jpg"),
+    return Card(
+      shadowColor: Colors.green,
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: const Color(0xFF033015),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: vendorLogo.startsWith('http') // Check if it's a URL
+                  ? NetworkImage(vendorLogo)
+                  : AssetImage(vendorLogo) as ImageProvider, // Use local asset if no URL
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    vendorName,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  Text(
+                    vendorEmail,
+                    style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vendorName,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    Text(
-                      vendorEmail,
-                      style: const TextStyle(fontSize: 14, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.edit, color: Colors.white),
-            ],
-          ),
+            ),
+           // const Icon(Icons.edit, color: Colors.white),
+          ],
         ),
       ),
     );
   }
+
 
   // Function to build a feature card
   Widget _buildCard(BuildContext context, String title, IconData icon, Widget page) {

@@ -221,6 +221,8 @@ class _AddAdvertisementPageState extends State<AddAdvertisementPage> {
       appBar: AppBar(
         title: Text("Add Advertisement", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF033015),
+        iconTheme: IconThemeData(color: Colors.white),
+
       ),
       body: SingleChildScrollView(
         child: Padding(

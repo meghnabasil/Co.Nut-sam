@@ -94,7 +94,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
             "Vendor Registration",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Color(0xFF033015)),
+          backgroundColor: Color(0xFF033015),
+          iconTheme: IconThemeData(color: Colors.white),
+
+    ),
+
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Card(

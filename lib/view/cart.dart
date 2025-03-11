@@ -30,6 +30,8 @@ class _CartState extends State<Cart> {
       appBar: AppBar(
         title: Text("Cart"),
         backgroundColor: Color(0xFF033015),
+        iconTheme: IconThemeData(color: Colors.white),
+
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

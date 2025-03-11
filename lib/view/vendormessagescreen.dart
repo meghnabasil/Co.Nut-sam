@@ -1,59 +1,92 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class Vendor_ChatScreen extends StatefulWidget {
-  final String companyName;
+class ChatScreen extends StatefulWidget {
+  final String vendorId;
+  final String businessName;
 
-  Vendor_ChatScreen({required this.companyName});
+  ChatScreen({required this.vendorId, required this.businessName});
 
   @override
-  _Vendor_ChatScreenState createState() => _Vendor_ChatScreenState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
-
-class _Vendor_ChatScreenState extends State<Vendor_ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  List<String> messages = [];
-
-  void sendMessage() {
-    if (_messageController.text.isNotEmpty) {
-      setState(() {
-        messages.add(_messageController.text);
-        _messageController.clear();
-      });
-    }
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late String currentUserId;
+  @override
+  void initState() {
+    super.initState();
+    currentUserId = _auth.currentUser?.uid ?? "";
+  }
+  String _getChatRoomId(String user1, String user2) {
+    List<String> users = [user1, user2]..sort(); // Ensure same ID for both users
+    return users.join("_");
   }
 
+  void _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+    String chatRoomId = _getChatRoomId(currentUserId, widget.vendorId);
+    await _firestore.collection("chat_rooms").doc(chatRoomId).collection("messages").add({
+      "senderId": currentUserId,
+      "message": _messageController.text.trim(),
+      "timestamp": FieldValue.serverTimestamp(),
+    });
+    _messageController.clear();
+  }
+  Stream<QuerySnapshot> _getMessages() {
+    String chatRoomId = _getChatRoomId(currentUserId, widget.vendorId);
+    return _firestore
+        .collection("chat_rooms")
+        .doc(chatRoomId)
+        .collection("messages")
+        .orderBy("timestamp", descending: false)
+        .snapshots();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Chat ${widget.companyName}",style: TextStyle(color: Colors.white),),
-        backgroundColor: Color(0xFF033015),
+      appBar: AppBar(title: Text("Chat with ${widget.businessName}"),
         iconTheme: IconThemeData(color: Colors.white),
-      ),
+    ),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(10),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                return Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.green[200],
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Text(messages[index], style: TextStyle(fontSize: 16)),
-                  ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _getMessages(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                var messages = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    var message = messages[index];
+                    bool isMe = message["senderId"] == currentUserId;
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.blue : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
+
+                        ),
+                        child: Text(
+                          message["message"],
+                          style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(18.0),
             child: Row(
               children: [
                 Expanded(
@@ -65,10 +98,9 @@ class _Vendor_ChatScreenState extends State<Vendor_ChatScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
                 IconButton(
-                  icon: Icon(Icons.send, color: Color(0xFF01200D)),
-                  onPressed: sendMessage,
+                  icon: Icon(Icons.send, color: Colors.blue),
+                  onPressed: _sendMessage,
                 ),
               ],
             ),

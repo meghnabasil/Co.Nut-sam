@@ -11,6 +11,22 @@ class Product {
   final List<String> imageUrls;
   final Timestamp timestamp;
 
+
+
+  // New Fields
+  final bool isSubscriptionAvailable;
+  final String? subscriptionDuration;
+  final String? deliveryFrequency;
+  final double? subscriptionPrice;
+  final int? subscriptionQuantity;
+
+  final bool isExportingAvailable;
+  final String? exportCountry;
+  final double? shippingCost;
+  final int? exportQuantity;
+
+
+
   Product({
     required this.id,
     required this.vendorId,
@@ -21,6 +37,17 @@ class Product {
     required this.description,
     required this.imageUrls,
     required this.timestamp,
+
+
+    this.isSubscriptionAvailable = false,
+    this.subscriptionDuration,
+    this.deliveryFrequency,
+    this.subscriptionPrice,
+    this.subscriptionQuantity,
+    this.isExportingAvailable = false,
+    this.exportCountry,
+    this.shippingCost,
+    this.exportQuantity,
   });
 
   factory Product.fromFirestore(DocumentSnapshot doc) {
@@ -35,8 +62,22 @@ class Product {
       description: data['description'] ?? '',
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
       timestamp: data['timestamp'] ?? Timestamp.now(),
+
+
+
+      isSubscriptionAvailable: data['subscription'] ?? false,
+      subscriptionDuration: data['subscriptionDuration'],
+      deliveryFrequency: data['deliveryFrequency'],
+      subscriptionPrice: (data['subscriptionPrice'] ?? 0).toDouble(),
+      subscriptionQuantity: data['subscriptionQuantity'],
+      isExportingAvailable: data['exporting'] ?? false,
+      exportCountry: data['exportCountry'],
+      shippingCost: (data['shippingCost'] ?? 0).toDouble(),
+      exportQuantity: data['exportQuantity'],
     );
   }
+
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,6 +89,16 @@ class Product {
       'description': description,
       'imageUrls': imageUrls,
       'timestamp': timestamp,
+
+      'subscription': isSubscriptionAvailable,
+      'subscriptionDuration': subscriptionDuration,
+      'deliveryFrequency': deliveryFrequency,
+      'subscriptionPrice': subscriptionPrice,
+      'subscriptionQuantity': subscriptionQuantity,
+      'exporting': isExportingAvailable,
+      'exportCountry': exportCountry,
+      'shippingCost': shippingCost,
+      'exportQuantity': exportQuantity,
     };
   }
 }

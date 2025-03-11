@@ -35,6 +35,7 @@ class _ManageBookingPageState extends State<ManageBookingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Manage Bookings", style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Color(0xFF033015),
       ),
       body: StreamBuilder<QuerySnapshot>(

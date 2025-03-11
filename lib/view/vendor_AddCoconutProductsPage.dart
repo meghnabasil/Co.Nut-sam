@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/view/vendor_viewproduct.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 import '../controller/session.dart';
 
@@ -17,9 +19,37 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _companyController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+
+
+  // Subscription Controllers
+  final TextEditingController _subscriptionPriceController = TextEditingController();
+  final TextEditingController _subscriptionQuantityController = TextEditingController();
+  final TextEditingController _subscriptionDurationController = TextEditingController();
+  final TextEditingController _deliveryFrequencyController = TextEditingController();
+
+
+  // Exporting Controllers
+  final TextEditingController _exportQuantityController = TextEditingController();
+  final TextEditingController _shippingCostController = TextEditingController();
+  final TextEditingController _exportCountryController = TextEditingController();
+
   List<File> _images = [];
+  List<String> _selectedCountries = [];
   String? _selectedCategory;
   bool _isUploading = false;
+  bool _isSubscription = false;
+  bool _isExporting = false;
+
+
+  String? _subscriptionDuration;
+  String? _deliveryFrequency;
+  String? _selectedCountry;
+
+  final List<String> _subscriptionDurations = ["1 Year", "6 Months"];
+  final List<String> _deliveryFrequencies = ["Start of each Month","Start of each Month and Mid-Month"];
+  final List<String> _exportCountries = ["UAE","USA", "UK", "Canada", "Australia"];
+
+
 
   final List<String> _categories = [
     "Fresh Coconuts",
@@ -84,20 +114,59 @@ class _AddProductPageState extends State<AddProductPage> {
         'imageUrls': imageUrls,
         'vendorId': vendorId, // ✅ Added vendor ID here
         'timestamp': FieldValue.serverTimestamp(),
+        'subscription': _isSubscription,
+        'exporting': _isExporting,
+
+        // Subscription fields
+        'subscription': _isSubscription,
+        'subscriptionDuration': _isSubscription ? _subscriptionDuration : null, // ✅ FIXED
+        'deliveryFrequency': _isSubscription ? _deliveryFrequency : null, // ✅ FIXED
+        'subscriptionPrice': _isSubscription ? double.tryParse(_subscriptionPriceController.text) ?? 0.0 : null,
+        'subscriptionQuantity': _isSubscription ? int.tryParse(_subscriptionQuantityController.text) ?? 0 : null,
+
+        // Exporting fields
+        'exporting': _isExporting,
+        'exportCountries': _isExporting ? _selectedCountries : [], // ✅ FIXED
+        'shippingCost': _isExporting ? double.tryParse(_shippingCostController.text) ?? 0.0 : null,
+        'exportQuantity': _isExporting && _exportQuantityController.text.isNotEmpty
+      ? int.tryParse(_exportQuantityController.text) ?? 0
+          : 0,
+
+
       });
 
       setState(() {
         _isUploading = false;
+        _isSubscription = false;
+        _isExporting = false;
         _images = [];
         _nameController.clear();
         _companyController.clear();
         _priceController.clear();
         _descriptionController.clear();
+
+
+        _subscriptionDurationController.clear();
+        _deliveryFrequencyController.clear();
+        _subscriptionPriceController.clear();
+        _subscriptionQuantityController.clear();
+        _exportCountryController.clear();
+        _shippingCostController.clear();
+        _exportQuantityController.clear();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Product uploaded successfully!')),
       );
+
+      //  Delay navigation slightly
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) =>Viewcocoandtools()),
+        );
+      });
+
     } catch (e) {
       setState(() {
         _isUploading = false;
@@ -133,6 +202,7 @@ class _AddProductPageState extends State<AddProductPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Product", style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Color(0xFF033015),
       ),
       body: Padding(
@@ -203,7 +273,80 @@ class _AddProductPageState extends State<AddProductPage> {
                     _buildTextField(_priceController, "Price"),
                     SizedBox(height: 10),
                     _buildTextField(_descriptionController, "Description about Product", maxLines: 5),
+
+
+                    // ✅ Subscription Checkbox
+                    CheckboxListTile(
+                      title: Text("Subscription Available"),
+                      value: _isSubscription,
+                      onChanged: (value) => setState(() => _isSubscription = value!),
+                    ),
+
+                    // ✅ Subscription Fields (Only shown when checked)
+                    if (_isSubscription) ...[
+                      DropdownButtonFormField<String>(
+                        value: _subscriptionDuration,
+                        decoration: InputDecoration(labelText: "Subscription Duration"),
+                        items: _subscriptionDurations.map((duration) {
+                          return DropdownMenuItem(value: duration, child: Text(duration));
+                        }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _subscriptionDuration = value; // ✅ Ensure value is updated
+                });
+              },
+                        ),
+                      SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: _deliveryFrequency,
+                        decoration: InputDecoration(labelText: "Delivery Frequency"),
+                        items: _deliveryFrequencies.map((frequency) {
+                          return DropdownMenuItem(value: frequency, child: Text(frequency));
+                        }).toList(),
+                        onChanged: (value) => setState(() => _deliveryFrequency = value),
+                      ),
+                      SizedBox(height: 10),
+                      _buildTextField(_subscriptionPriceController, "Subscription Price"),
+                      SizedBox(height: 10),
+                      _buildTextField(_subscriptionQuantityController, "Subscription Quantity"),
+                    ],
+
+                    // ✅ Exporting Checkbox
+                    // ✅ Exporting Checkbox
+                    CheckboxListTile(
+                      title: Text("Exporting Available"),
+                      value: _isExporting,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _isExporting = newValue!;
+                        });
+                      },
+                    ),
+
+                    // ✅ Exporting Fields (Only shown when checked)
+                    if (_isExporting) ...[
+                      MultiSelectDialogField(
+                        items: _exportCountries.map((country) => MultiSelectItem(country, country)).toList(),
+                        title: Text("Select Export Countries"),
+                        buttonText: Text("Select Countries"),
+                        initialValue: _selectedCountries,
+                        onConfirm: (values) {
+                          setState(() {
+                            _selectedCountries = values.cast<String>(); // ✅ Ensure list updates
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      _buildTextField(_shippingCostController, "Shipping Cost"),
+                      SizedBox(height: 10),
+                      if (_isExporting)
+                        _buildTextField(_exportQuantityController, "Export Quantity"),
+
+                    ],
                     SizedBox(height: 20),
+
+
+
                     _isUploading
                         ? Center(child: CircularProgressIndicator())
                         : SizedBox(
@@ -224,7 +367,6 @@ class _AddProductPageState extends State<AddProductPage> {
             ),
           ),
         ),
-      ),
-    );
+      ),);
   }
 }

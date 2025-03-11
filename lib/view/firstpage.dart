@@ -64,7 +64,8 @@ class ProductScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => ProductDetail(
                         productIndex: index.toString(),
-                      //
+
+                        //
                       ),
                     ),
                   );
@@ -103,7 +104,7 @@ class ProductScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 5),
                             Text(
-                              '\$${product.price}',
+                              '\₹${product.price}',
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
                             ),
                           ],

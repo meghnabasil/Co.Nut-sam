@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dup/model/products_model.dart';
 import 'package:dup/view/Favourites.dart';
 import 'package:dup/view/Tools.dart';
+import 'package:dup/view/cart.dart';
 import 'package:dup/view/firstpage.dart';
 import 'package:dup/view/login.dart';
 import 'package:dup/view/onDoorstep.dart';
@@ -188,9 +189,24 @@ class _HomeState extends State<Home> {
               leading: const Icon(Icons.work, color: Colors.black),
               title: const Text("Workers"),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                    builder: (context) => WorkersList(),),);
               },
             ),
+
+            ListTile(
+              leading: const Icon(Icons.shopping_cart, color: Colors.black),
+              title: const Text("Your Cart"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Cart(),),);
+              },
+            ),
+
             if (_isVendor) // Show only if user is a vendor
               ListTile(
                 leading: const Icon(Icons.house, color: Colors.black),
@@ -204,6 +220,13 @@ class _HomeState extends State<Home> {
                   );
                 },
               ),
+            Divider(color: Colors.black, // Line color
+              thickness: 2,        // Line thickness
+              height: 20,
+            ),
+
+
+
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text("Log Out"),
@@ -266,6 +289,8 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 35),
+
+
             // Company logos CarouselSlider
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -300,6 +325,11 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 35),
+
+
+
+
+
             if (videoAdvertisements.isNotEmpty) ...[
               //  Text("Videos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
@@ -321,20 +351,20 @@ class _HomeState extends State<Home> {
               ),
             ],
 
-            const SizedBox(height: 50),
+            const SizedBox(height: 60),
             // Row of buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildButton('Worker', WorkersList()),
-                  _buildButton('Sell', Subscription()),
+                  _buildButton('Register as Worker', ProfilePage()),
+                  _buildButton('Register as Seller', ProfilePage()),
                   //  _buildButton('Products', VendorDashboard()),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 60),
             // Subscribe now text
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.0),
@@ -527,7 +557,7 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => Subscription()),
+                              builder: (context) => FavoriteListPage()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -543,7 +573,7 @@ class _HomeState extends State<Home> {
                       icon:
                           const Icon(Icons.favorite, color: Color(0xFF033015)),
                       label: const Text(
-                        "Favourites",
+                        "WishList",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 17),
                       ),
@@ -565,13 +595,13 @@ class _HomeState extends State<Home> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: const Color(0xFF033015), width: 2),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(40),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Text(
           text,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),

@@ -127,7 +127,9 @@ class _BookingPageState extends State<BookingPage> {
       appBar: AppBar(
         title: Text("Book Service", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF033015),
-      ),
+          iconTheme: IconThemeData(color: Colors.white),
+
+    ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

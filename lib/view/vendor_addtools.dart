@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dup/view/vendor_viewproduct.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:dup/view/viewTools.dart';
 
 class AddToolPage extends StatefulWidget {
   @override
@@ -98,6 +100,16 @@ class _AddToolPageState extends State<AddToolPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Tool uploaded successfully!')),
       );
+
+      // ✅ Delay navigation slightly
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) =>Viewcocoandtools()),
+        );
+      });
+
+
     } catch (e) {
       setState(() {
         _isUploading = false;

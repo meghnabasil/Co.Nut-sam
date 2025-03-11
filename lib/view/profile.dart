@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'UserProfile_Edit.dart';
+
 class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -147,9 +149,13 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: Image.asset(
+          'asset/img.png',
+          height: 23,
+        ),
         centerTitle: true,
         backgroundColor: const Color(0xFF033015),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -169,13 +175,33 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold)),
                 Text(email, style: const TextStyle(fontSize: 16)),
+
+
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Editprofile())),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF033015), // Button color
+                    foregroundColor: Colors.white, // Text color
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => EditProfile())),
                   child: const Text('Edit Profile'),
                 ),
+
+
+
+
                 const SizedBox(height: 20),
+                Divider(
+                  color: Colors.black, // Line color
+                  thickness: 2,        // Line thickness
+                  height: 20,          // Space around the line
+                ),
+
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -194,51 +220,167 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.green),
                   ),
                 ),
-                const SizedBox(height: 20),
-                if (isVendor)
-                  Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.green),
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Business Name: $businessName"),
-                          Text("Business Type: $businessType"),
-                          Text("City: $city"),
-                          Text("Email: $vendorEmail"),
-                          Text("Phone: $phone"),
-                          Text("Product Category: $productCategory"),
-                          Text("Business Model: ${businessModel?.join(', ')}"),
-                          imageUrl != null
-                              ? Image.network(imageUrl!,
-                                  height: 100, width: 100)
-                              : Text("No Image Available"),
-                        ],
-                      )),
-                if (isWorker)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blue),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+
+                Divider(
+                  color: Colors.black, // Line color
+                  thickness: 2,        // Line thickness
+                  height: 20,          // Space around the line
+                ),
+                const SizedBox(height: 50),
+
+
+              if (isVendor)
+            Container(
+            padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Color(0xFF033015),
+          border: Border.all(color: Colors.green, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Business Details",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/venregistration');
+                  },
+                ),
+              ],
+            ),
+            Divider(color: Colors.green, thickness: 1),
+            SizedBox(height: 8),
+            Text("📌 Business Name        : $businessName",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
+            Text("🏢 Business Type          : $businessType",
+                style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text("📍 City                : $city", style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text("📧 Email             : $vendorEmail", style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text("📞 Phone                      : $phone", style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text("📦 Product Category   : $productCategory",
+                style: TextStyle(fontSize: 16, color: Colors.white)),
+            Text("💼 Business Model      : ${businessModel?.join(', ')}",
+                style: TextStyle(fontSize: 16, color: Colors.white)),
+            SizedBox(height: 12),
+            imageUrl != null
+                ? Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  imageUrl!,
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
+                : Center(
+              child: Text("❌ No Image Available",
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+
+
+        if (isWorker)
+    Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color:  Color(0xFF033015),
+        border: Border.all(color: Colors.green, width: 2),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Worker Details",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.white),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/workerregistration');
+                },
+              ),
+            ],
+          ),
+          Divider(color: Colors.green, thickness: 1),
+          SizedBox(height: 8),
+          Text("👤 Full Name       : $workerName",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
+          Text("💰 Job Title         : $jobTitle",
+              style: TextStyle(fontSize: 16, color: Colors.white)),
+          Text("📍 City                 : $wcity", style: TextStyle(fontSize: 16, color: Colors.white)),
+          Text("📞 Phone             : $wphone", style: TextStyle(fontSize: 16, color: Colors.white)),
+          Text("📝 Description    : $description",
+              style: TextStyle(fontSize: 16, color: Colors.white)),
+        ],
+      ),
+    ),
+
+
+
+                const SizedBox(height: 30),
+                Card(
+
+                  color: Colors.grey[300],
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Worker Details",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("Full Name: $workerName"),
-                        Text("Job Title: $jobTitle"),
-                        Text("City: $wcity"),
-                        Text("Phone: $wphone"),
-                        Text("Discription: $description"),
+                        Text(
+                          "Select Your Role ",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Are You an Vendor ? or worker ?...\nCome Register here ..\nby pushing the toggle button !\n You can register as either a Vendor or a Worker, but not both at the same time.",
+                          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        ),
                       ],
                     ),
                   ),
-                const SizedBox(height: 20),
+                ),
+
+
+    const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -277,6 +419,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 60),
+
               ],
             ),
           ),

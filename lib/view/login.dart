@@ -4,6 +4,8 @@ import 'package:dup/view/bottomnav.dart';
 import 'package:flutter/material.dart';
 import 'package:dup/view/Forgotpass.dart';
 import 'package:dup/view/registration.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
+
 
 class UserForm extends StatefulWidget {
   const UserForm({super.key});
@@ -61,21 +63,66 @@ class _UserFormState extends State<UserForm> {
         child: Column(
           children: [
             // Top section with logo or app name
+            // Container(
+            //   padding: const EdgeInsets.symmetric(vertical: 60),
+            //   child: Center(
+            //
+            //     child:
+            //     Text(
+            //
+            //       '𝐂𝐨.𝐍𝐮𝐭', // You can replace this with your app logo or name
+            //       style: TextStyle(
+            //         fontSize: 50,
+            //         fontWeight: FontWeight.bold,
+            //         color: Colors.white,
+            //         fontStyle: FontStyle.italic,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // Container(
+            //   padding: const EdgeInsets.symmetric(vertical: 120),
+            //   child: Center(
+            //     child: Image.asset(
+            //       'asset/img.png',
+            //       height: 50,
+            //     ),
+            //   ),
+            // ),
+
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 60),
-              child: Center(
-                child:
-                Text(
-                  '𝐂𝐨.𝐍𝐮𝐭', // You can replace this with your app logo or name
-                  style: TextStyle(
-                    fontSize: 50,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontStyle: FontStyle.italic,
+              padding: const EdgeInsets.symmetric(vertical: 80),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      'asset/img.png',
+                      height: 50,
+                    ),
                   ),
-                ),
+                  SizedBox(height: 20), // Adds space between image and text
+                  DefaultTextStyle(
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white54,
+                    ),
+                    child: AnimatedTextKit(
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          'Purely Coconut, Simply the Best.!',
+                          speed: Duration(milliseconds: 80),
+                        ),
+                      ],
+                      totalRepeatCount: 2,
+                    ),
+                  ),
+                ],
               ),
             ),
+
+
             // Middle section with white background and rounded corners
             Expanded(
               child: Container(

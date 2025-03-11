@@ -55,7 +55,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Register as Woker",style: TextStyle(color: Colors.white),), backgroundColor: Color(0xFF033015)),
+      appBar: AppBar(title: Text("Register as Woker",style: TextStyle(color: Colors.white),), backgroundColor: Color(0xFF033015),iconTheme: IconThemeData(color: Colors.white),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Card(

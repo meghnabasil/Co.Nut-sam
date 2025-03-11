@@ -43,6 +43,7 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Vendor Profile'),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<Vendor>(
         future: vendorFuture,

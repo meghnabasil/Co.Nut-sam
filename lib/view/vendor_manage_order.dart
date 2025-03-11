@@ -90,7 +90,10 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
         title: Text(
           'Manage Orders',
           style: TextStyle(color: Colors.white),
+
         ),
+        iconTheme: IconThemeData(color: Colors.white),
+
         backgroundColor: primaryColor,
       ),
       body: Padding(

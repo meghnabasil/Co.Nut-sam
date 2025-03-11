@@ -11,6 +11,7 @@ class Viewcocoandtools extends StatelessWidget {
         appBar: AppBar(
           title: Text("View Products", style: TextStyle(color: Colors.white)),
           backgroundColor: Color(0xFF033015),
+          iconTheme: IconThemeData(color: Colors.white),
           bottom: TabBar(
             labelColor: Colors.white, // Selected tab text color
             unselectedLabelColor: Colors.white70, // Unselected tab text color

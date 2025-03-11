@@ -33,7 +33,7 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
   final List<Widget> _pages =  [
     Home(),
     Cart(),
-    Chat(),
+    ChatList(),
     History(),
     ProfilePage(),
 
