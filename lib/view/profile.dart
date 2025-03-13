@@ -261,7 +261,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 IconButton(
                   icon: Icon(Icons.edit, color: Colors.white),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/venregistration');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => VendorRegisterScreen()),
+                    );
+
                   },
                 ),
               ],
@@ -333,7 +337,10 @@ class _ProfilePageState extends State<ProfilePage> {
               IconButton(
                 icon: Icon(Icons.edit, color: Colors.white),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/workerregistration');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  AddWorkerScreen(workerName: workerName ?? "Default Name")),
+                  );
                 },
               ),
             ],

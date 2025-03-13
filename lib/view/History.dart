@@ -2,6 +2,7 @@ import 'package:dup/view/Booking_history.dart';
 import 'package:dup/view/Home.dart';
 import 'package:dup/view/Booking_history.dart';
 import 'package:dup/view/bottomnav.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class History extends StatefulWidget {
@@ -9,9 +10,27 @@ class History extends StatefulWidget {
 
   @override
   State<History> createState() => _HistoryState();
+
 }
 
 class _HistoryState extends State<History> {
+  String? userId;
+
+  void initState() {
+    super.initState();
+    _getUserId(); // Fetch user ID when the widget initializes
+  }
+
+  void _getUserId() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        userId = user.uid; // Assign the user ID
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -59,10 +78,14 @@ class _HistoryState extends State<History> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // Center(child: Text("Your product")),
-                  Center(child: Text("Order history")),
-                  BookingHistoryPage(bookingHistory: [])
+                  const Center(child: Text("Order History")),
+
+                  // Show BookingHistoryPage only if userId is available
+                  userId != null
+                      ?BookingHistoryScreen(userId: userId!)
+                      : const Center(child: CircularProgressIndicator()),
                 ],
+
               ),
             ),
           ],

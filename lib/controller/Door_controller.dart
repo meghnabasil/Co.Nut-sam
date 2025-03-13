@@ -101,4 +101,38 @@ class DoorstepDeliveryController {
       return [];
     }
   }
+  /// **Fetch a Single Doorstep Delivery by ID**
+  Future<DoorstepDelivery?> getDoorstepDeliveryById(String id) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection("doorstep_deliveries").doc(id).get();
+      if (doc.exists) {
+        return DoorstepDelivery.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching delivery by ID: $e");
+      return null;
+    }
+  }
+
+  /// **Update Doorstep Delivery**
+  Future<String?> updateDoorstepDelivery(String id, DoorstepDelivery updatedDelivery) async {
+    try {
+      await _firestore.collection("doorstep_deliveries").doc(id).update(updatedDelivery.toMap());
+      return null; // Success
+    } catch (e) {
+      return "Error updating delivery: $e";
+    }
+  }
+
+  /// **Delete Doorstep Delivery**
+  Future<String?> deleteDoorstepDelivery(String id) async {
+    try {
+      await _firestore.collection("doorstep_deliveries").doc(id).delete();
+      return null; // Success
+    } catch (e) {
+      return "Error deleting delivery: $e";
+    }
+  }
+
 }

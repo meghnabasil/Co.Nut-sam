@@ -109,6 +109,7 @@ class _BookingPageState extends State<BookingPage> {
       landmark: landmarkController.text,
       userId: widget.userId,
       vendorId: widget.vendorId,
+      status: 'pending',
       createdAt: Timestamp.now(),
     );
 
@@ -159,7 +160,7 @@ class _BookingPageState extends State<BookingPage> {
             SizedBox(height: 5),
             Text(widget.companyName, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
             SizedBox(height: 10),
-            Text("Price: \$${updatedPrice.toStringAsFixed(2)}",
+            Text("Price: \₹${updatedPrice.toStringAsFixed(2)}",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF380230))),
             Divider(thickness: 1, color: Colors.grey[300]),
             SizedBox(height: 10),

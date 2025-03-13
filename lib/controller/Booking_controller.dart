@@ -26,6 +26,8 @@ class BookingController {
     }
   }
 
+
+
   Future<void> deleteBooking(String id) async {
     try {
       await bookingCollection.doc(id).delete();

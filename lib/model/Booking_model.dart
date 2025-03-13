@@ -20,8 +20,10 @@ class Booking {
   String userId;
   // Vendor details added
   String vendorId;
+
   // String vendorName;
   Timestamp createdAt;
+  String status;
 
   Booking({
     this.id = '',
@@ -44,6 +46,7 @@ class Booking {
     required this.vendorId,
    // required this.vendorName,
     required this.createdAt,
+    required this.status,
   });
 
   Map<String, dynamic> toMap() {
@@ -67,6 +70,7 @@ class Booking {
       'vendorId': vendorId,
       // 'vendorName': vendorName,
       'createdAt': createdAt,
+      'status': status,
     };
   }
 
@@ -92,6 +96,7 @@ class Booking {
       vendorId: map['vendorId'],
       // vendorName: map['vendorName'],
       createdAt: map['createdAt'],
+      status: map['status'],
     );
   }
 }

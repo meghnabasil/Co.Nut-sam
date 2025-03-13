@@ -1,3 +1,4 @@
+import 'package:dup/view/vendor_View_Doorstep.dart';
 import 'package:dup/view/viewCoco.dart';
 import 'package:dup/view/viewTools.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ class Viewcocoandtools extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text("View Products", style: TextStyle(color: Colors.white)),
@@ -19,6 +20,7 @@ class Viewcocoandtools extends StatelessWidget {
             tabs: [
               Tab(text: "Coconut Products"),
               Tab(text: "Tools"),
+              Tab(text:"DoorStep"),
             ],
           ),
         ),
@@ -26,6 +28,7 @@ class Viewcocoandtools extends StatelessWidget {
           children: [
             ProductDisplayPage(),
             ToolDisplayPage(),
+            VendorServices(),
           ],
         ),
       ),

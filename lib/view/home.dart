@@ -10,6 +10,7 @@ import 'package:dup/view/productlist.dart';
 import 'package:dup/view/profile.dart';
 import 'package:dup/view/subscription.dart';
 import 'package:dup/view/vendor_home.dart';
+import 'package:dup/view/videoplayer.dart';
 import 'package:dup/view/workerlist.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -331,13 +332,11 @@ class _HomeState extends State<Home> {
 
 
             if (videoAdvertisements.isNotEmpty) ...[
-              //  Text("Videos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
                   height: 200,
-                  autoPlay: true,
-                  autoPlayInterval: Duration(seconds: 20),
+                  autoPlay: false,  // Disable autoplay to give users control
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
                   viewportFraction: 0.9,
@@ -345,13 +344,14 @@ class _HomeState extends State<Home> {
                 items: videoAdvertisements.map((ad) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(13),
-                    child: VideoWidget(videoUrl: ad['videoUrl']!),
+                    child: ChewieVideoWidget(videoUrl: ad['videoUrl']!),
                   );
                 }).toList(),
               ),
             ],
 
             const SizedBox(height: 60),
+
             // Row of buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -386,7 +386,7 @@ class _HomeState extends State<Home> {
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
-                  height: 200,
+                  height: 300,
                   autoPlay: true,
                   autoPlayInterval: Duration(seconds: 3),
                   enlargeCenterPage: true,

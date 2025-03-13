@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import for session handling
 
 class ManageBookingPage extends StatefulWidget {
   @override
@@ -7,11 +9,24 @@ class ManageBookingPage extends StatefulWidget {
 }
 
 class _ManageBookingPageState extends State<ManageBookingPage> {
-  // Reference to the bookings collection in Firestore
-  final CollectionReference bookingsRef =
-  FirebaseFirestore.instance.collection('bookings');
+  final CollectionReference bookingsRef = FirebaseFirestore.instance.collection('bookings');
+  String? vendorId; // Store the logged-in vendor's ID
 
-  // Function to update a booking's status in Firestore
+  @override
+  void initState() {
+    super.initState();
+    getStoredVendorId(); // Fetch vendorId from session
+  }
+
+  // Retrieve vendorId from SharedPreferences
+  Future<void> getStoredVendorId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      vendorId = prefs.getString('vid'); // Fetch vendorId from session
+    });
+  }
+
+  // Function to update a booking's status
   Future<void> updateBookingStatus(String bookingId, String newStatus) async {
     try {
       await bookingsRef.doc(bookingId).update({'status': newStatus});
@@ -20,14 +35,32 @@ class _ManageBookingPageState extends State<ManageBookingPage> {
     }
   }
 
-  // Confirm booking (set status to Confirmed)
-  Future<void> confirmBooking(String bookingId) async {
-    await updateBookingStatus(bookingId, 'Confirmed');
-  }
-
-  // Not confirm booking (set status to Not Confirmed)
-  Future<void> notConfirmBooking(String bookingId) async {
-    await updateBookingStatus(bookingId, 'Not Confirmed');
+  // Function to confirm status change before updating
+  void confirmStatusChange(BuildContext context, String bookingId, String newStatus) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Status Change"),
+          content: Text("Are you sure you want to change the status to '$newStatus'?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                updateBookingStatus(bookingId, newStatus); // Update status
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -38,8 +71,10 @@ class _ManageBookingPageState extends State<ManageBookingPage> {
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Color(0xFF033015),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: bookingsRef.snapshots(),
+      body: vendorId == null
+          ? Center(child: CircularProgressIndicator()) // Wait for vendorId
+          : StreamBuilder<QuerySnapshot>(
+        stream: bookingsRef.where('vendorId', isEqualTo: vendorId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text("Error loading bookings"));
@@ -48,15 +83,15 @@ class _ManageBookingPageState extends State<ManageBookingPage> {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Extract the booking documents
           final bookingDocs = snapshot.data!.docs;
+          if (bookingDocs.isEmpty) {
+            return Center(child: Text("No bookings available"));
+          }
 
           return ListView.builder(
             itemCount: bookingDocs.length,
             itemBuilder: (context, index) {
-              var bookingData =
-              bookingDocs[index].data() as Map<String, dynamic>;
-              // Save the document ID for updating later
+              var bookingData = bookingDocs[index].data() as Map<String, dynamic>;
               String bookingId = bookingDocs[index].id;
 
               return Card(
@@ -66,122 +101,79 @@ class _ManageBookingPageState extends State<ManageBookingPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Service and customer info card
-                      Card(
-                        elevation: 2,
-                        child: ListTile(
-                          title: Text("Service: ${bookingData['serviceName']}",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(
-                              "Booked by: ${bookingData['fullName']}\nMobile: ${bookingData['mobileNumber']}"),
-                        ),
+                      ListTile(
+                        title: Text("Service: ${bookingData['serviceName']}",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text("Booked by: ${bookingData['fullName']}\n"
+                            "Mobile: ${bookingData['mobileNumber']}"),
                       ),
-                      SizedBox(height: 12),
-                      // Address details card
-                      Card(
-                        elevation: 2,
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Address Details",
-                                  style: TextStyle(fontWeight: FontWeight.bold)),
-                              SizedBox(height: 6),
-                              // Using buildingDetails, area, townCity, district, and pincode
-                              Text(
-                                "${bookingData['buildingDetails']}, ${bookingData['area']}, ${bookingData['townCity']}, ${bookingData['district']}, ${bookingData['pincode']}",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                "Landmark: ${bookingData['landmark']}",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),
-                        ),
+                      Divider(),
+                      Text("Address Details", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        "${bookingData['buildingDetails']}, ${bookingData['area']}, "
+                            "${bookingData['townCity']}, ${bookingData['district']}, ${bookingData['pincode']}",
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      SizedBox(height: 12),
-                      // Booking details card
-                      Card(
-                        elevation: 2,
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Booking Details",
-                                  style: TextStyle(fontWeight: FontWeight.bold)),
-                              SizedBox(height: 6),
-                              Text("Pickup Date: ${bookingData['pickupDate']}",
-                                  style: TextStyle(fontSize: 14)),
-                              Text("Return Date: ${bookingData['returnDate']}",
-                                  style: TextStyle(fontSize: 14)),
-                              Text("Total Price: \$${bookingData['price']}",
-                                  style: TextStyle(fontSize: 14)),
-                              Text("Status: ${bookingData['status']}",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue)),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () =>
-                                          confirmBooking(bookingId),
-                                      child: Text('Confirm'),
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () =>
-                                          notConfirmBooking(bookingId),
-                                      child: Text('Cancel'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      // Status update buttons
+                      Text("Landmark: ${bookingData['landmark']}", overflow: TextOverflow.ellipsis),
+                      Divider(),
+                      Text("Booking Details", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text("Pickup Date: ${bookingData['pickupDate']}"),
+                      Text("Return Date: ${bookingData['returnDate']}"),
+                      Text("Total Price: \$${bookingData['price']}"),
+                      Text("Status: ${bookingData['status']}",
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                      SizedBox(height: 10),
+
+                      // Confirm and Cancel Buttons
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
+                          ElevatedButton(
+                            onPressed: () => confirmStatusChange(context, bookingId, 'Confirmed'),
+                            child: Text('Confirm'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => confirmStatusChange(context, bookingId, 'Not Confirmed'),
+                            child: Text('Cancel'),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+
+                      // Status Change Buttons
+                      Wrap(
+                        spacing: 10, // Adjust spacing between buttons horizontally
+                        runSpacing: 10, // Adjust spacing between rows
+                        alignment: WrapAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 150, // Set width to ensure two buttons per row
                             child: ElevatedButton(
-                              onPressed: () =>
-                                  updateBookingStatus(bookingId, 'Delivered'),
-                              child: Text('Delivered',
-                                  style: TextStyle(fontSize: 12)),
+                              onPressed: () => confirmStatusChange(context, bookingId, 'Delivered'),
+                              child: Text('Delivered', style: TextStyle(fontSize: 10)),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Expanded(
+                          SizedBox(
+                            width: 150,
                             child: ElevatedButton(
-                              onPressed: () =>
-                                  updateBookingStatus(bookingId, 'Processing'),
-                              child: Text('Processing',
-                                  style: TextStyle(fontSize: 11)),
+                              onPressed: () => confirmStatusChange(context, bookingId, 'Processing'),
+                              child: Text('Processing', style: TextStyle(fontSize: 10)),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Expanded(
+                          SizedBox(
+                            width: 150,
                             child: ElevatedButton(
-                              onPressed: () =>
-                                  updateBookingStatus(bookingId, 'On the way'),
-                              child: Text('On the way',
-                                  style: TextStyle(fontSize: 11)),
+                              onPressed: () => confirmStatusChange(context, bookingId, 'On the way'),
+                              child: Text('On the way', style: TextStyle(fontSize: 10)),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 150,
+                            child: ElevatedButton(
+                              onPressed: () => confirmStatusChange(context, bookingId, 'Pickup done'),
+                              child: Text('Pickup done', style: TextStyle(fontSize: 10)),
                             ),
                           ),
                         ],

@@ -526,9 +526,11 @@ class _ProductDetailState extends State<ProductDetail> {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                  businessName: productData?['company'] ?? 'Company Name',vendorId: vendorId ?? 'Unknown',
-              ))
+            builder: (context) => ChatScreen(
+              vendorId: vendorId!,
+              businessName: vendorName,
+            ),
+          ),
         ),
         backgroundColor: Colors.grey,
         child: Icon(Icons.chat, color: Color(0xFF033015)),
