@@ -13,14 +13,14 @@ class EditDoorstepService extends StatefulWidget {
 
 class _EditDoorstepServiceState extends State<EditDoorstepService> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _companyController;
+  late TextEditingController _companyNameController ;
   late TextEditingController _priceController;
   late TextEditingController _detailsController;
 
   @override
   void initState() {
     super.initState();
-    _companyController = TextEditingController(text: widget.serviceData['companyName']);
+    _companyNameController  = TextEditingController(text: widget.serviceData['companyName']);
     _priceController = TextEditingController(text: widget.serviceData['price'].toString());
     _detailsController = TextEditingController(text: widget.serviceData['details']);
   }
@@ -29,7 +29,7 @@ class _EditDoorstepServiceState extends State<EditDoorstepService> {
     if (_formKey.currentState!.validate()) {
       try {
         await FirebaseFirestore.instance.collection("doorstep_deliveries").doc(widget.docId).update({
-          "companyName": _companyController.text,
+          "companyName": _companyNameController .text,
           "price": double.parse(_priceController.text),
           "details": _detailsController.text,
         });
@@ -52,9 +52,10 @@ class _EditDoorstepServiceState extends State<EditDoorstepService> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(controller: _companyController, decoration: InputDecoration(labelText: "Company Name")),
+              TextFormField(controller:  _companyNameController , decoration: InputDecoration(labelText: "CompanyName")),
               TextFormField(controller: _priceController, decoration: InputDecoration(labelText: "Price"), keyboardType: TextInputType.number),
               TextFormField(controller: _detailsController, decoration: InputDecoration(labelText: "Details")),
+
               SizedBox(height: 20),
               ElevatedButton(onPressed: _updateDelivery, child: Text("Update Service")),
             ],

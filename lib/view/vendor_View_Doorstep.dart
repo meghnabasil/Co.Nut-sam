@@ -27,6 +27,10 @@ class _VendorServicesState extends State<VendorServices> {
   void _editService(String serviceId, Map<String, dynamic> data) {
     TextEditingController priceController = TextEditingController(text: data['price'].toString());
     TextEditingController detailsController = TextEditingController(text: data['details']);
+    TextEditingController addressController = TextEditingController(text: data['address']);
+    TextEditingController phoneController = TextEditingController(text: data['phone']);
+    TextEditingController cityController = TextEditingController(text: data['city']);
+    TextEditingController deliveryAreaController = TextEditingController(text: data['delivery_area']);
 
     showDialog(
       context: context,
@@ -45,6 +49,23 @@ class _VendorServicesState extends State<VendorServices> {
                 controller: detailsController,
                 decoration: InputDecoration(labelText: "Details"),
               ),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(labelText: "Address"),
+              ),
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(labelText: "Phone"),
+              ),
+              TextField(
+                controller: cityController,
+                decoration: InputDecoration(labelText: "City"),
+              ),
+              TextField(
+                controller: deliveryAreaController,
+                decoration: InputDecoration(labelText: "Delivery Area"),
+              ),
             ],
           ),
           actions: [
@@ -57,6 +78,10 @@ class _VendorServicesState extends State<VendorServices> {
                 await _firestore.collection("doorstep_deliveries").doc(serviceId).update({
                   "price": double.tryParse(priceController.text) ?? data['price'],
                   "details": detailsController.text,
+                  "address": addressController.text,
+                  "phone": phoneController.text,
+                  "city": cityController.text,
+                  "delivery_area": deliveryAreaController.text,
                 });
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Service Updated")));
@@ -179,7 +204,7 @@ class _VendorServicesState extends State<VendorServices> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        '\$${(data['price'] as num?)?.toDouble().toStringAsFixed(2) ?? '0.00'}',
+                        '\₹${(data['price'] as num?)?.toDouble().toStringAsFixed(2) ?? '0.00'}',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
                       ),
                     ],

@@ -33,12 +33,19 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _shippingCostController = TextEditingController();
   final TextEditingController _exportCountryController = TextEditingController();
 
+  TextEditingController _minQuantityController = TextEditingController();
+  TextEditingController _maxQuantityController = TextEditingController();
+  TextEditingController _insuranceCostController = TextEditingController();
+  TextEditingController _portCostController = TextEditingController();
+  TextEditingController _costPerWeightController = TextEditingController();
+
   List<File> _images = [];
   List<String> _selectedCountries = [];
   String? _selectedCategory;
   bool _isUploading = false;
   bool _isSubscription = false;
   bool _isExporting = false;
+  Map<String, Map<String, double>> countryPricing = {};
 
 
   String? _subscriptionDuration;
@@ -105,7 +112,7 @@ class _AddProductPageState extends State<AddProductPage> {
         imageUrls.add(imageUrl);
       }
 
-      await FirebaseFirestore.instance.collection('products').add({
+ /*     await FirebaseFirestore.instance.collection('products').add({
         'name': _nameController.text,
       //  'company': _companyController.text,
         'price': double.parse(_priceController.text),
@@ -133,7 +140,34 @@ class _AddProductPageState extends State<AddProductPage> {
           : 0,
 
 
+      });*/
+
+      await FirebaseFirestore.instance.collection('products').add({
+        'name': _nameController.text,
+        'price': double.parse(_priceController.text),
+        'category': _selectedCategory,
+        'description': _descriptionController.text,
+        'imageUrls': imageUrls,
+        'vendorId': vendorId,
+        'timestamp': FieldValue.serverTimestamp(),
+        'subscription': _isSubscription,
+        'subscriptionDuration': _isSubscription ? _subscriptionDuration : null,
+        'deliveryFrequency': _isSubscription ? _deliveryFrequency : null,
+        'subscriptionPrice': _isSubscription ? double.tryParse(_subscriptionPriceController.text) ?? 0.0 : null,
+        'subscriptionQuantity': _isSubscription ? int.tryParse(_subscriptionQuantityController.text) ?? 0 : null,
+        'exporting': _isExporting,
+        'exportCountries': _isExporting ? _selectedCountries : [],
+        'shippingCost': _isExporting ? double.tryParse(_shippingCostController.text) ?? 0.0 : null,
+        'exportQuantity': _isExporting && _exportQuantityController.text.isNotEmpty
+            ? int.tryParse(_exportQuantityController.text) ?? 0
+            : 0,
+        'minQuantity': int.tryParse(_minQuantityController.text) ?? 0,
+        'maxQuantity': int.tryParse(_maxQuantityController.text) ?? 0,
+        'insuranceCost': double.tryParse(_insuranceCostController.text) ?? 0.0,
+        'portCost': double.tryParse(_portCostController.text) ?? 0.0,
+        'costPerWeight': double.tryParse(_costPerWeightController.text) ?? 0.0,
       });
+
 
       setState(() {
         _isUploading = false;
@@ -177,7 +211,7 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1}) {
+/*  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -195,6 +229,30 @@ class _AddProductPageState extends State<AddProductPage> {
         validator: (value) => value!.isEmpty ? "Enter $label" : null,
       ),
     );
+  }*/
+
+  Widget _buildTextField(TextEditingController controller, String hint, {int maxLines = 1}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: hint,
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        _updatePricing();  // Call dynamic pricing update if needed
+      },
+    );
+  }
+
+  void _updatePricing() {
+    int minQuantity = int.tryParse(_minQuantityController.text) ?? 0;
+    int maxQuantity = int.tryParse(_maxQuantityController.text) ?? 0;
+
+    if (minQuantity > 0 && maxQuantity > minQuantity) {
+      // Add your dynamic pricing logic here
+      print("Min Quantity: $minQuantity, Max Quantity: $maxQuantity");
+    }
   }
 
   @override
@@ -311,8 +369,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       _buildTextField(_subscriptionQuantityController, "Subscription Quantity"),
                     ],
 
-                    // ✅ Exporting Checkbox
-                    // ✅ Exporting Checkbox
                     CheckboxListTile(
                       title: Text("Exporting Available"),
                       value: _isExporting,
@@ -323,16 +379,15 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
 
-                    // ✅ Exporting Fields (Only shown when checked)
                     if (_isExporting) ...[
-                      MultiSelectDialogField(
+                      /*MultiSelectDialogField(
                         items: _exportCountries.map((country) => MultiSelectItem(country, country)).toList(),
                         title: Text("Select Export Countries"),
                         buttonText: Text("Select Countries"),
                         initialValue: _selectedCountries,
                         onConfirm: (values) {
                           setState(() {
-                            _selectedCountries = values.cast<String>(); // ✅ Ensure list updates
+                            _selectedCountries = values.cast<String>();
                           });
                         },
                       ),
@@ -341,6 +396,55 @@ class _AddProductPageState extends State<AddProductPage> {
                       SizedBox(height: 10),
                       if (_isExporting)
                         _buildTextField(_exportQuantityController, "Export Quantity"),
+*/
+ /*                     MultiSelectDialogField(
+                        items: _exportCountries.map((country) => MultiSelectItem(country, country)).toList(),
+                        title: Text("Select Export Countries"),
+                        buttonText: Text("Select Countries"),
+                        initialValue: _selectedCountries,
+                        onConfirm: (values) {
+                          setState(() {
+                            _selectedCountries = values.cast<String>();
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      _buildTextField(_minQuantityController, "Min Quantity"),
+                      SizedBox(height: 10),
+                      _buildTextField(_insuranceCostController, "Insurance Cost"),
+                      SizedBox(height: 10),
+                      _buildTextField(_portCostController, "Port Cost"),
+                      SizedBox(height: 10),
+                      _buildTextField(_costPerWeightController, "Cost Per Weight (KG/Lit)"),
+                      SizedBox(height: 20),
+                      _buildTextField(_maxQuantityController, "Max Quantity"),
+                      SizedBox(height: 10),
+                      if (_isExporting)
+                        _buildTextField(_exportQuantityController, "Export Quantity"),
+                      SizedBox(height: 10),*/
+
+                      MultiSelectDialogField(
+                        items: _exportCountries.map((country) => MultiSelectItem(country, country)).toList(),
+                        title: Text("Select Export Countries"),
+                        buttonText: Text("Select Countries"),
+                        initialValue: _selectedCountries,
+                        onConfirm: (values) {
+                          setState(() {
+                            _selectedCountries = values.cast<String>();
+                            // Initialize country pricing for selected countries
+                            for (var country in _selectedCountries) {
+                              if (!countryPricing.containsKey(country)) {
+                                countryPricing[country] = {
+                                  'shippingCost': 0.0,
+                                  'insuranceCost': 0.0,
+                                  'portCost': 0.0,
+                                  'costPerWeight': 0.0,
+                                };
+                              }
+                            }
+                          });
+                        },
+                      ),
 
                     ],
                     SizedBox(height: 20),
@@ -368,5 +472,8 @@ class _AddProductPageState extends State<AddProductPage> {
           ),
         ),
       ),);
+
   }
+
+
 }

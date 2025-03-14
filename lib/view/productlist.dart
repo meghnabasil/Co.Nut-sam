@@ -4,13 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dup/view/vendormessagescreen.dart';
 
-import '../controller/fav_controller.dart';
-import '../model/fav_model.dart';
-
 class ProductDetail extends StatefulWidget {
-  final String productIndex;
+  final String productId;
 
-  ProductDetail({required this.productIndex});
+  ProductDetail({required this.productId});
 
   @override
   _ProductDetailState createState() => _ProductDetailState();
@@ -32,54 +29,48 @@ class _ProductDetailState extends State<ProductDetail> {
   bool showSubscriptionCard = false;
   String selectedPlan = '1 Year';
   double price = 100.0; // Base price, can be adjusted
-  String vendorName="Unknown Vendor";
+  String vendorName = "Unknown Vendor";
   String? vendorId;
   String? vendorEmail;
   String? vendorPhone;
   String? vendorAddress;
   String? vendorCity;
 
-
   @override
   void initState() {
     super.initState();
     fetchProductDetails();
-
   }
 
   Future<void> fetchProductDetails() async {
+    print("Fetching Product Details for ID: ${widget.productId}");
     try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('products').get();
-      if (snapshot.docs.isNotEmpty/* &&
-          widget.productIndex < snapshot.docs.length*/) {
-        DocumentSnapshot productSnapshot = snapshot.docs[int.parse(widget.productIndex)];
+      // Fetch the document directly using its ID
+      DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(widget.productId)
+          .get();
 
-        if (productSnapshot.exists) {
-          setState(() {
-            productData = productSnapshot.data() as Map<String, dynamic>?;
-            imageUrls = List<String>.from(productData?['imageUrls'] ?? []);
-            vendorId = productData?['vendorId'];
-            isLoading = false;
-          });
-          print('Vwednor ID:......%%%% $vendorId');
+      if (productSnapshot.exists) {
+        setState(() {
+          productData = productSnapshot.data() as Map<String, dynamic>?;
+          imageUrls = List<String>.from(productData?['imageUrls'] ?? []);
+          vendorId = productData?['vendorId'];
+          isLoading = false;
+        });
+        print('Vendor ID: $vendorId');
+        if (vendorId != null) {
           fetchVendorDetails(vendorId!);
-        } else {
-          setState(() => isLoading = false);
-          print("Product not found");
         }
       } else {
         setState(() => isLoading = false);
-        print("Invalid product index");
+        print("Product not found");
       }
     } catch (e) {
       setState(() => isLoading = false);
       print("Error fetching product: $e");
     }
   }
-
-
-
 
   Future<void> fetchVendorDetails(String vendorId) async {
     print(vendorId);
@@ -92,10 +83,10 @@ class _ProductDetailState extends State<ProductDetail> {
       if (vendorSnapshot.exists) {
         setState(() {
           vendorName = vendorSnapshot["businessName"];
-          vendorEmail=vendorSnapshot['email'];
-          vendorPhone=vendorSnapshot['phone'];
-          vendorAddress=vendorSnapshot['address'];
-          vendorCity=vendorSnapshot['city'];
+          vendorEmail = vendorSnapshot['email'];
+          vendorPhone = vendorSnapshot['phone'];
+          vendorAddress = vendorSnapshot['address'];
+          vendorCity = vendorSnapshot['city'];
         });
       } else {
         print("Vendor not found");
@@ -105,14 +96,14 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
-
   void showVendorDetailsPopup() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(vendorName ?? "Vendor Details"),
-          content: Text('$vendorEmail\n $vendorPhone\n $vendorAddress, $vendorCity'),
+          content:
+              Text('$vendorEmail\n $vendorPhone\n $vendorAddress, $vendorCity'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -124,7 +115,6 @@ class _ProductDetailState extends State<ProductDetail> {
     );
   }
 
-  /// Check if product is in favorites
   Future<void> checkFavoriteStatus() async {
     try {
       User? user = _auth.currentUser;
@@ -134,7 +124,7 @@ class _ProductDetailState extends State<ProductDetail> {
           .collection('users')
           .doc(user.uid)
           .collection('favorites')
-          .doc(widget.productIndex)
+          .doc(widget.productId)
           .get();
 
       setState(() {
@@ -154,38 +144,33 @@ class _ProductDetailState extends State<ProductDetail> {
     }
 
     String uid = user.uid;
-    CollectionReference favoritesCollection =
-    FirebaseFirestore.instance.collection('favorites').doc(uid).collection('items');
+    CollectionReference favoritesCollection = FirebaseFirestore.instance
+        .collection('favorites')
+        .doc(uid)
+        .collection('items');
 
     if (isFavorite) {
       // Remove from favorites
-      await favoritesCollection.doc(widget.productIndex).delete();
+      await favoritesCollection.doc(widget.productId).delete();
       setState(() {
         isFavorite = false;
       });
     } else {
       // Add to favorites
-      await favoritesCollection.doc(widget.productIndex).set({
-        'productId': widget.productIndex,
+      await favoritesCollection.doc(widget.productId).set({
+        'productId': widget.productId,
         'productName': productData?['name'], // Ensure correct field names
         'imageUrl': imageUrls.isNotEmpty ? imageUrls[0] : '',
         'vendorId': vendorId,
         'addedAt': FieldValue.serverTimestamp(),
       });
+      print("Product Detail.......... ${widget.productId}");
       setState(() {
         isFavorite = true;
       });
     }
   }
 
-  void addToCart(String productName) {
-    setState(() {
-      cart.add(productName);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$productName added to cart!')),
-    );
-  }
 
   // Function to update the price based on the selected plan
   void updatePrice() {
@@ -196,6 +181,40 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
+
+
+  // Add the product to the user's cart
+  Future<void> addToCart() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("User not logged in");
+      return;
+    }
+
+    String uid = user.uid;
+    CollectionReference cartCollection = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('cart');
+
+    // Add product to cart
+    try {
+      await cartCollection.doc(widget.productId).set({
+        'productId': widget.productId,
+        'productName': productData?['name'],
+        'price': productData?['price'],
+        'imageUrl': imageUrls.isNotEmpty ? imageUrls[0] : '',
+        'quantity': quantity,
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+      print("Product added to cart");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${productData?['name']} added to cart!')),
+      );
+    } catch (e) {
+      print("Error adding to cart: $e");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -274,12 +293,11 @@ class _ProductDetailState extends State<ProductDetail> {
                     ],
                   ),
 
-
                   Divider(thickness: 2, color: Colors.brown),
                   SizedBox(height: 10),
 
                   GestureDetector(
-                     onTap:() => showVendorDetailsPopup() ,
+                    onTap: () => showVendorDetailsPopup(),
                     child: Text(
                       "Company: $vendorName",
                       style: TextStyle(
@@ -496,13 +514,15 @@ class _ProductDetailState extends State<ProductDetail> {
                         SizedBox(
                           width: 200,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: addToCart,  // Call the addToCart function here
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF033015),
-                                foregroundColor: Colors.white),
+                              backgroundColor: Color(0xFF033015),
+                              foregroundColor: Colors.white,
+                            ),
                             child: Text('Add to Cart'),
                           ),
                         ),
+
                         SizedBox(height: 10),
                         SizedBox(
                           width: 200,

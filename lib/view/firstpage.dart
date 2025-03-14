@@ -4,6 +4,42 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/products_model.dart';
 
 class ProductScreen extends StatelessWidget {
+  Stream<List<Map<String, dynamic>>> getProducts() async* {
+    final productSnapshot =
+        await FirebaseFirestore.instance.collection('products').get();
+
+    List<Map<String, dynamic>> productsWithCompany = [];
+
+    for (var doc in productSnapshot.docs) {
+      final data = doc.data();
+      String vendorId = data['vendorId'] ?? '';
+
+      String companyName = 'Unknown'; // Default value
+
+      if (vendorId.isNotEmpty) {
+        final vendorDoc = await FirebaseFirestore.instance
+            .collection('vendors')
+            .doc(vendorId)
+            .get();
+
+        if (vendorDoc.exists) {
+          companyName = vendorDoc.data()?['businessName'] ?? 'Unknown';
+        }
+      }
+
+      // Adding companyName to product data
+      var productData = {
+        ...data,
+        'id': doc.id,
+        'company': companyName,
+      };
+
+      productsWithCompany.add(productData);
+    }
+
+    yield productsWithCompany;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,8 +69,8 @@ class ProductScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder<List<Product>>(
-        stream: getProducts(), // Fetching products from Firestore
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: getProducts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -63,7 +99,7 @@ class ProductScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ProductDetail(
-                        productIndex: index.toString(),
+                        productId: product['id'],
 
                         //
                       ),
@@ -81,9 +117,12 @@ class ProductScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(10)),
                           child: Image.network(
-                            product.imageUrls.isNotEmpty ? product.imageUrls[0] : 'https://via.placeholder.com/150',
+                            product['imageUrls'].isNotEmpty
+                                ? product['imageUrls'][0]
+                                : 'https://via.placeholder.com/150',
                             fit: BoxFit.cover,
                             width: double.infinity,
                           ),
@@ -95,17 +134,21 @@ class ProductScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              product.name,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              product['name'],
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              product.company,
+                              product['company'],
                               style: TextStyle(color: Colors.black54),
                             ),
                             SizedBox(height: 5),
                             Text(
-                              '\₹${product.price}',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF380230)),
+                              '\₹${product['price']}',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF380230)),
                             ),
                           ],
                         ),
@@ -120,10 +163,11 @@ class ProductScreen extends StatelessWidget {
       ),
     );
   }
-
+/*
   Stream<List<Product>> getProducts() {
     return FirebaseFirestore.instance.collection('products').snapshots().map(
-          (snapshot) => snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList(),
-    );
-  }
+          (snapshot) =>
+              snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList(),
+        );
+  }*/
 }

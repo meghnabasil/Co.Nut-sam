@@ -1,36 +1,43 @@
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CartItem {
-  final String productId;
-  final String productName;
-  final String vendorId;
-  final int quantity;
-  final double price; // Added price field
+  String productId;
+  String productName;
+  double price;
+  String imageUrl;
+  int quantity;
+  DateTime addedAt;
 
   CartItem({
     required this.productId,
     required this.productName,
-    required this.vendorId,
+    required this.price,
+    required this.imageUrl,
     required this.quantity,
-    required this.price, // Include price in the constructor
+    required this.addedAt,
   });
 
-  // Convert Firebase document to CartItem object
-  factory CartItem.fromMap(Map<String, dynamic> data, String docId) {
+  // Method to create a CartItem instance from Firestore document data
+  factory CartItem.fromFirestore(Map<String, dynamic> data, String productId) {
     return CartItem(
-      productId: docId,
+      productId: productId,
       productName: data['productName'] ?? '',
-      vendorId: data['vendorId'] ?? '',
+      price: data['price']?.toDouble() ?? 0.0,
+      imageUrl: data['imageUrl'] ?? '',
       quantity: data['quantity'] ?? 1,
-      price: (data['price'] ?? 0.0).toDouble(), // Ensure price is double
+      addedAt: (data['addedAt'] as Timestamp).toDate(),
     );
   }
 
-  // Convert CartItem object to Firebase map
+  // Method to convert a CartItem instance into a Map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'productName': productName,
-      'vendorId': vendorId,
+      'price': price,
+      'imageUrl': imageUrl,
       'quantity': quantity,
-      'price': price, // Save price to Firebase
+      'addedAt': FieldValue.serverTimestamp(),
     };
   }
 }

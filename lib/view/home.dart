@@ -382,7 +382,6 @@ class _HomeState extends State<Home> {
             // Secondary CarouselSlider
 
             if (imageAdvertisements.isNotEmpty) ...[
-              //Text("Images", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
@@ -394,13 +393,14 @@ class _HomeState extends State<Home> {
                   viewportFraction: 0.9,
                 ),
                 items: imageAdvertisements.map((ad) {
+                  String? productId= ad['productId'];
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ProductDetail(productIndex: ad['productId']!),
+                              ProductDetail(productId: productId!),
                         ),
                       );
                     },
