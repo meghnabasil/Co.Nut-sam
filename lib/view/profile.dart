@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dup/controller/session.dart';
+import 'package:dup/view/editCompanyProfile.dart';
 import 'package:dup/view/editprofile.dart';
 import 'package:dup/model/user_model.dart';
 import 'package:dup/view/venregistration.dart';
@@ -8,8 +8,6 @@ import 'package:dup/view/workerRegistration.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'UserProfile_Edit.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -38,6 +36,9 @@ class _ProfilePageState extends State<ProfilePage> {
   String? wphone;
   String? wcity;
   String? description;
+  String? vendorId;
+
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserProfile() async {
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -70,11 +72,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (isVendor) {
           Map<String, String?> vendorData = await Session.getVendor();
-          String? vendorId = vendorData['vid']; // Get vendor ID from session
+          vendorId = vendorData['vid'];
 
-          if (vendorId != null && vendorId.isNotEmpty) {
+          if (vendorId != null && vendorId!.isNotEmpty) {
             print("Vendor ID found: $vendorId");
-            await _loadVendorDetails(vendorId);
+            await _loadVendorDetails(vendorId!);
           } else {
             print("Vendor ID not found in session");
           }
@@ -87,9 +89,19 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       }
     }
+
+    // Simulate a delay before showing the business/worker details
+    await Future.delayed(Duration(seconds: 3));
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _loadWorkerDetails(String workerId) async {
+    setState(() {
+      isLoading=true;
+    });
     print("Fetching worker details for ID: $workerId");
 
     DocumentSnapshot workerDoc = await FirebaseFirestore.instance
@@ -111,6 +123,11 @@ class _ProfilePageState extends State<ProfilePage> {
       wphone = workerData['phone'] ?? '';
       wcity = workerData['city'] ?? '';
       description = workerData['description'] ?? '';
+    });
+
+    await Future.delayed(Duration(seconds: 3));
+    setState(() {
+      isLoading=false;
     });
   }
 
@@ -143,115 +160,6 @@ class _ProfilePageState extends State<ProfilePage> {
       phone = vendorData['phone'] ?? '';
       productCategory = vendorData['productCategory'] ?? '';
     });
-  }
-
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void _editVendorProfile(Map<String, dynamic> data) async {
-
-
-    Map<String, String?> vendorData = await Session.getVendor();
-    String? vendorId = vendorData['vid'];
-
-    if (vendorId == null || vendorId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Vendor ID is missing")));
-      return;
-    }
-
-    TextEditingController businessNameController =
-        TextEditingController(text: data['businessName']);
-    TextEditingController businessTypeController =
-        TextEditingController(text: data['businessType']);
-    TextEditingController cityController =
-        TextEditingController(text: data['city']);
-    TextEditingController emailController =
-        TextEditingController(text: data['email']);
-    TextEditingController phoneController =
-        TextEditingController(text: data['phone']);
-    TextEditingController productCategoryController =
-        TextEditingController(text: data['productCategory']);
-    TextEditingController businessModelController =
-        TextEditingController(text: data['businessModel']?.join(', '));
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Edit Vendor Profile"),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: businessNameController,
-                  decoration: InputDecoration(labelText: "Business Name"),
-                ),
-                TextField(
-                  controller: businessTypeController,
-                  decoration: InputDecoration(labelText: "Business Type"),
-                ),
-                TextField(
-                  controller: cityController,
-                  decoration: InputDecoration(labelText: "City"),
-                ),
-                TextField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: "Email"),
-                ),
-                TextField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(labelText: "Phone"),
-                ),
-                TextField(
-                  controller: productCategoryController,
-                  decoration: InputDecoration(labelText: "Product Category"),
-                ),
-                TextField(
-                  controller: businessModelController,
-                  decoration: InputDecoration(labelText: "Business Model"),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-
-                try {
-                  await _firestore.collection("vendors").doc(vendorId).update({
-                    "businessName": businessNameController.text,
-                    "businessType": businessTypeController.text,
-                    "city": cityController.text,
-                    "email": emailController.text,
-                    "phone": phoneController.text,
-                    "productCategory": productCategoryController.text,
-                    "businessModel": businessModelController.text.split(', '),
-                  });
-
-                  Navigator.pop(context); // Close the dialog
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Vendor Profile Updated")));
-
-                } catch (e) {
-                  // Handle any errors that might occur during the update
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to update: $e")));
-                }
-              },
-              child: Text("Save"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -295,8 +203,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => EditProfile())),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const EditProfile()),
+                  ),
                   child: const Text('Update Profile'),
                 ),
                 const SizedBox(height: 20),
@@ -344,7 +255,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    child: Column(
+                    child: isLoading
+                        ? Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.green,
+                      ),
+                    )
+                        : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -361,15 +278,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             IconButton(
                               icon: Icon(Icons.edit, color: Colors.white),
                               onPressed: () {
-                                _editVendorProfile({
-                                  'businessName': businessName,
-                                  'businessType': businessType,
-                                  'city': city,
-                                  'email': vendorEmail,
-                                  'phone': phone,
-                                  'productCategory': productCategory,
-                                  'businessModel': businessModel,
-                                });
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          EditCompanyProfile(vendorId: vendorId,),
+                                    ));
                               },
                             ),
                           ],
@@ -396,8 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Text("📦 Product Category : $productCategory",
                             style:
                                 TextStyle(fontSize: 16, color: Colors.white)),
-                        Text(
-                            "💼 Business Model : ${businessModel?.join(', ')}",
+                        Text("💼 Business Model : ${businessModel?.join(', ')}",
                             style:
                                 TextStyle(fontSize: 16, color: Colors.white)),
                         SizedBox(height: 12),
@@ -438,7 +351,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    child: Column(
+                    child: isLoading
+                        ? Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.green,
+                      ),
+                    )
+                        : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -562,147 +481,3 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
-
-/*void _editVendorProfile(Map<String, dynamic> data) async {
-  // Get the vendor information from session
-  Map<String, String?> vendorData = await Session.getVendor();
-  String? vendorId = vendorData['vid'];
-
-  if (vendorId == null || vendorId.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Vendor ID is missing")));
-    return;
-  }
-
-  // Initialize text controllers with data from the vendor
-  TextEditingController businessNameController =
-  TextEditingController(text: data['businessName']);
-  TextEditingController businessTypeController =
-  TextEditingController(text: data['businessType']);
-  TextEditingController cityController =
-  TextEditingController(text: data['city']);
-  TextEditingController emailController =
-  TextEditingController(text: data['email']);
-  TextEditingController phoneController =
-  TextEditingController(text: data['phone']);
-  TextEditingController productCategoryController =
-  TextEditingController(text: data['productCategory']);
-  TextEditingController businessModelController =
-  TextEditingController(text: data['businessModel']?.join(', '));
-
-  // To store the selected image URL
-  String? imageUrl;
-
-  // Function to pick an image
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      File file = File(pickedFile.path);
-      String fileName = basename(file.path);
-
-      // Upload image to Firebase Storage
-      try {
-        TaskSnapshot uploadTask = await _storage
-            .ref()
-            .child('vendorImages/$vendorId/$fileName')
-            .putFile(file);
-        imageUrl = await uploadTask.ref.getDownloadURL(); // Get image URL after upload
-        print('Image URL: $imageUrl');
-      } catch (e) {
-        print('Error uploading image: $e');
-      }
-    }
-  }
-
-  // Make sure to use BuildContext instead of Context in showDialog or ScaffoldMessenger
-  showDialog(
-    context: context, // context here must be of type BuildContext
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Edit Vendor Profile"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Image picker button
-              IconButton(
-                icon: Icon(Icons.image),
-                onPressed: _pickImage,
-                tooltip: 'Pick Company Image',
-              ),
-              if (imageUrl != null)
-                Image.network(imageUrl!), // Show selected image if available
-              TextField(
-                controller: businessNameController,
-                decoration: InputDecoration(labelText: "Business Name"),
-              ),
-              TextField(
-                controller: businessTypeController,
-                decoration: InputDecoration(labelText: "Business Type"),
-              ),
-              TextField(
-                controller: cityController,
-                decoration: InputDecoration(labelText: "City"),
-              ),
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(labelText: "Email"),
-              ),
-              TextField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(labelText: "Phone"),
-              ),
-              TextField(
-                controller: productCategoryController,
-                decoration: InputDecoration(labelText: "Product Category"),
-              ),
-              TextField(
-                controller: businessModelController,
-                decoration: InputDecoration(labelText: "Business Model"),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                // Update vendor profile data in Firestore
-                await _firestore.collection("vendors").doc(vendorId).update({
-                  "businessName": businessNameController.text,
-                  "businessType": businessTypeController.text,
-                  "city": cityController.text,
-                  "email": emailController.text,
-                  "phone": phoneController.text,
-                  "productCategory": productCategoryController.text,
-                  "businessModel": businessModelController.text.split(', '),
-                  if (imageUrl != null) "profileImage": imageUrl, // Save the image URL if available
-                });
-
-                Navigator.pop(context); // Close the dialog
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Vendor Profile Updated")));
-              } catch (e) {
-                // Handle any errors that might occur during the update
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to update: $e")));
-              }
-            },
-            child: Text("Save"),
-          ),
-        ],
-      );
-    },
-  );
-}*/
-
