@@ -45,7 +45,6 @@ class _ProductDetailState extends State<ProductDetail> {
   Future<void> fetchProductDetails() async {
     print("Fetching Product Details for ID: ${widget.productId}");
     try {
-      // Fetch the document directly using its ID
       DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
           .collection('products')
           .doc(widget.productId)
@@ -54,13 +53,25 @@ class _ProductDetailState extends State<ProductDetail> {
       if (productSnapshot.exists) {
         setState(() {
           productData = productSnapshot.data() as Map<String, dynamic>?;
-          imageUrls = List<String>.from(productData?['imageUrls'] ?? []);
+          imageUrls = List<String>.from(productData?['images'] ?? []);
           vendorId = productData?['vendorId'];
           isLoading = false;
         });
+
         print('Vendor ID: $vendorId');
+
         if (vendorId != null) {
           fetchVendorDetails(vendorId!);
+        }
+
+        bool isExporting = productData?['isExporting'] ?? false;
+        bool isSubscription = productData?['isSubscription'] ?? false;
+
+        if (isExporting) {
+          fetchExportingDetails();
+        }
+        if (isSubscription) {
+          fetchSubscriptionDetails();
         }
       } else {
         setState(() => isLoading = false);
@@ -69,6 +80,62 @@ class _ProductDetailState extends State<ProductDetail> {
     } catch (e) {
       setState(() => isLoading = false);
       print("Error fetching product: $e");
+    }
+  }
+
+  Future<void> fetchExportingDetails() async {
+    try {
+      QuerySnapshot exportSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(widget.productId)
+          .collection('exportingData')
+          .get();
+
+      if (exportSnapshot.docs.isNotEmpty) {
+        List<Map<String, dynamic>> exportingDetails =
+            exportSnapshot.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          data['country'] = doc.id; // Adding country name as a key
+          return data;
+        }).toList();
+
+        setState(() {
+          productData?['exportingDetails'] = exportingDetails;
+        });
+
+        print("Exporting Details: $exportingDetails");
+      } else {
+        print("No exporting details found");
+      }
+    } catch (e) {
+      print("Error fetching exporting details: $e");
+    }
+  }
+
+  Future<void> fetchSubscriptionDetails() async {
+    try {
+      QuerySnapshot subscriptionSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(widget.productId)
+          .collection('subscriptionData')
+          .get();
+
+      if (subscriptionSnapshot.docs.isNotEmpty) {
+        List<Map<String, dynamic>> subscriptionDetails =
+            subscriptionSnapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).toList();
+
+        setState(() {
+          productData?['subscriptionDetails'] = subscriptionDetails;
+        });
+
+        print("Subscription Details: $subscriptionDetails");
+      } else {
+        print("No subscription details found");
+      }
+    } catch (e) {
+      print("Error fetching subscription details: $e");
     }
   }
 
@@ -171,7 +238,6 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
-
   // Function to update the price based on the selected plan
   void updatePrice() {
     if (selectedPlan == '1 Year') {
@@ -180,8 +246,6 @@ class _ProductDetailState extends State<ProductDetail> {
       price = 60.0; // Price for 6 Month plan
     }
   }
-
-
 
   // Add the product to the user's cart
   Future<void> addToCart() async {
@@ -215,6 +279,7 @@ class _ProductDetailState extends State<ProductDetail> {
       print("Error adding to cart: $e");
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -325,7 +390,7 @@ class _ProductDetailState extends State<ProductDetail> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 3, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.blueGrey,
+                        color: Color(0xFF033015),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
@@ -367,143 +432,147 @@ class _ProductDetailState extends State<ProductDetail> {
                       ),
                     ),
                   ),
-
-                  SizedBox(height: 20),
-                  // Buttons to show the containers
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            showExportDetails = !showExportDetails;
-                          });
-                        },
-                        child: Text(showExportDetails
-                            ? 'Hide Export Details'
-                            : 'Show Export Details'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            showSubscriptionCard = !showSubscriptionCard;
-                          });
-                        },
-                        child:
-                            Text(showSubscriptionCard ? 'Hide' : 'Show Plan'),
-                      ),
-                    ],
-                  ),
                   SizedBox(height: 20),
 
-                  // 1st Container: Export Wholesale Details
-                  if (showExportDetails)
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Export Wholesale Details',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                  if (productData?['isExporting'] == true)
+                    Stack(
+                      children: [
+                        Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Card(
+                                color: Color(0xFF033015),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(30),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Exporting Details",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+                                      if (productData?['exportingDetails'] !=
+                                          null)
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children:
+                                              productData!['exportingDetails']
+                                                  .map<Widget>((export) {
+                                            var pricing = export['exportPricing'];
+                                            return Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text("${export['country']}:",
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white)),
+                                                SizedBox(height: 3),
+                                                GestureDetector(
+                                                  onTap: () {},
+                                                  child: Container(
+                                                    color: Colors.white,
+                                                    width: 230,
+                                                    height:40,
+                                                    child: Center(
+                                                      child: Text(
+                                                          "Min Quantity: ${pricing['minQuantity']} - Cost: ${pricing['costPerWeightMin']}",
+                                                          style: TextStyle(
+                                                              color: Colors.black)),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8),
+                                                GestureDetector(
+                                                  onTap: () {},
+                                                  child: Container(
+                                                    color: Colors.white,
+                                                    width: 230,
+                                                    height:40,
+                                                    child: Center(
+                                                      child: Text(
+                                                          "Max Quantity: ${pricing['maxQuantity']} - Cost: ${pricing['costPerWeightMax']}",
+                                                          style: TextStyle(
+                                                              color: Colors.black)),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                    "Insurance Cost: ${pricing['insuranceCost']}",
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                                Text(
+                                                    "Port Cost: ${pricing['portCost']}",
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                                SizedBox(height: 8),
+                                              ],
+                                            );
+                                          }).toList(),
+                                        )
+                                      else
+                                        Text(
+                                          "No exporting details available",
+                                          style: TextStyle(color: Colors.white70),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 10),
-                          Text('Here are the details for export wholesale.'),
-                          // Add more export details here
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  SizedBox(height: 20),
 
-                  // 2nd Container: Subscription Card
-                  if (showSubscriptionCard)
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Subscription Plan',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Radio(
-                                value: '1 Year',
-                                groupValue: selectedPlan,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedPlan = value.toString();
-                                    updatePrice();
-                                  });
-                                },
-                              ),
-                              Text('1 Year'),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Radio(
-                                value: '6 Month',
-                                groupValue: selectedPlan,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedPlan = value.toString();
-                                    updatePrice();
-                                  });
-                                },
-                              ),
-                              Text('6 Month'),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Price: ₹$price',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                  SizedBox(height: 10),
 
-                          // Plan explanation card
-                          SizedBox(height: 20),
-                          Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    selectedPlan == '1 Year'
-                                        ? '1 Year Subscription Plan'
-                                        : '6 Month Subscription Plan',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Text(
-                                    selectedPlan == '1 Year'
-                                        ? 'With the 1-year subscription plan, enjoy the product benefits for a full year at a discounted price.'
-                                        : 'The 6-month plan offers flexibility with a lower commitment, perfect for those seeking shorter-term access to the product.',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                ],
-                              ),
+                  // Subscription Card (Only visible if isSubscription is true)
+                  if (productData?['isSubscription'] == true)
+                    Card(
+                      color: Colors.green,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Subscription Plans",
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 5),
+                            if (productData?['subscriptionDetails'] != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: productData!['subscriptionDetails']
+                                    .map<Widget>((plan) => Text(
+                                          "${plan['duration']} - ₹${plan['price']}",
+                                          style: TextStyle(color: Colors.white),
+                                        ))
+                                    .toList(),
+                              )
+                            else
+                              Text("No subscription plans available",
+                                  style: TextStyle(color: Colors.white70)),
+                          ],
+                        ),
                       ),
                     ),
                   SizedBox(height: 40),
@@ -514,7 +583,8 @@ class _ProductDetailState extends State<ProductDetail> {
                         SizedBox(
                           width: 200,
                           child: ElevatedButton(
-                            onPressed: addToCart,  // Call the addToCart function here
+                            onPressed:
+                                addToCart, // Call the addToCart function here
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF033015),
                               foregroundColor: Colors.white,
@@ -522,7 +592,6 @@ class _ProductDetailState extends State<ProductDetail> {
                             child: Text('Add to Cart'),
                           ),
                         ),
-
                         SizedBox(height: 10),
                         SizedBox(
                           width: 200,

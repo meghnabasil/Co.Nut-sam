@@ -89,26 +89,12 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
- /* Widget _buildTextField(TextEditingController controller, String hint,
-      {int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: hint,
-        border: OutlineInputBorder(),
-      ),
-      keyboardType: TextInputType.number,
-      onChanged: (value) {
-        _updatePricing();
-      },
-    );
-  }*/
   Widget _buildTextField(
-      TextEditingController controller,
-      String hint, {
-        int maxLines = 1,
-        TextInputType inputType = TextInputType.text,
-      }) {
+    TextEditingController controller,
+    String hint, {
+    int maxLines = 1,
+    TextInputType inputType = TextInputType.text,
+  }) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
@@ -123,7 +109,25 @@ class _AddProductPageState extends State<AddProductPage> {
     );
   }
 
-
+  Widget _buildExportPricingTextField(
+      String label, String country, String key) {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        setState(() {
+          if (!countryPricing.containsKey(country)) {
+            countryPricing[country] = {};
+          }
+          countryPricing[country]![key] = value;
+          _updatePricing(); // Ensure the total cost updates dynamically
+        });
+      },
+    );
+  }
 
   void _updatePricing() {
     setState(() {
@@ -148,7 +152,6 @@ class _AddProductPageState extends State<AddProductPage> {
     });
   }
 
-
   Future<void> _uploadProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -157,11 +160,15 @@ class _AddProductPageState extends State<AddProductPage> {
     });
 
     try {
-      Map<String, String?> vendorId = await Session.getVendor();
+      Map<String, String?> vendorIds = await Session.getVendor();
+      String? vendorId = vendorIds['vid'];
       List<String> imageUrls = [];
+      print("Uploading vendorID: ........$vendorId");
+      // Upload images
       for (File image in _images) {
         String fileName = Uuid().v4();
-        Reference ref = FirebaseStorage.instance.ref().child('products/$fileName');
+        Reference ref =
+            FirebaseStorage.instance.ref().child('products/$fileName');
         await ref.putFile(image);
         String downloadURL = await ref.getDownloadURL();
         imageUrls.add(downloadURL);
@@ -180,28 +187,38 @@ class _AddProductPageState extends State<AddProductPage> {
         "timestamp": FieldValue.serverTimestamp(),
       };
 
-      // Add subscription details if applicable
+      DocumentReference productRef = await FirebaseFirestore.instance
+          .collection("products")
+          .add(productData);
+
+      if (_isExporting) {
+        for (var country in _selectedCountries) {
+          Map<String, dynamic> exportData = {
+            "exportPricing": countryPricing[country],
+            "createdAt": FieldValue.serverTimestamp(),
+          };
+
+          // Using country name as the document ID instead of auto-generated ID
+          await productRef
+              .collection("exportingData")
+              .doc(country)
+              .set(exportData);
+        }
+      }
+
       if (_isSubscription) {
-        productData.addAll({
-          "subscriptionPrice": double.tryParse(_subscriptionPriceController.text) ?? 0.0,
-          "subscriptionQuantity": int.tryParse(_subscriptionQuantityController.text) ?? 0,
+        Map<String, dynamic> subscriptionData = {
+          "subscriptionPrice":
+              double.tryParse(_subscriptionPriceController.text) ?? 0.0,
+          "subscriptionQuantity":
+              int.tryParse(_subscriptionQuantityController.text) ?? 0,
           "subscriptionDuration": _subscriptionDuration,
           "deliveryFrequency": _deliveryFrequency,
-        });
-      }
+          "createdAt": FieldValue.serverTimestamp(),
+        };
 
-      // Add exporting details if applicable
-      if (_isExporting) {
-        productData["exportCountries"] = _selectedCountries;
-        Map<String, dynamic> exportPricing = {};
-        for (var country in _selectedCountries) {
-          exportPricing[country] = countryPricing[country];
-        }
-        productData["exportPricing"] = exportPricing;
+        await productRef.collection("subscriptionData").add(subscriptionData);
       }
-
-      // Save product data in Firestore
-      await FirebaseFirestore.instance.collection("products").add(productData);
 
       setState(() {
         _isUploading = false;
@@ -222,7 +239,6 @@ class _AddProductPageState extends State<AddProductPage> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +333,6 @@ class _AddProductPageState extends State<AddProductPage> {
                           setState(() => _isSubscription = value!),
                     ),
 
-                    // ✅ Subscription Fields (Only shown when checked)
                     if (_isSubscription) ...[
                       DropdownButtonFormField<String>(
                         value: _subscriptionDuration,
@@ -378,13 +393,11 @@ class _AddProductPageState extends State<AddProductPage> {
                             for (var country in _selectedCountries) {
                               if (!countryPricing.containsKey(country)) {
                                 countryPricing[country] = {
-                                  'insuranceCost': 0.0,
-                                  'portCost': "",
-                                  'minQuantity': "",
-                                  'costPerWeightMin': "",
-                                  'maxQuantity': "",
-                                  'costPerWeightMax': "",
-                                  'costPerWeightAboveMax': "",
+                                  'insuranceCost': '',
+                                  'portCost': '',
+                                  'minQuantity': '',
+                                  'costPerWeightMin': '',
+                                  'totalCost': '0',
                                 };
                               }
                             }
@@ -393,77 +406,55 @@ class _AddProductPageState extends State<AddProductPage> {
                       ),
                       SizedBox(height: 10),
 
-                      ..._selectedCountries.map((country) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(country,
+                      // Generate text fields dynamically for each selected country
+                      Column(
+                        children: _selectedCountries.map((country) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(country,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField(
+                                  "Insurance Cost", country, 'insuranceCost'),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField(
+                                  "Port Cost", country, 'portCost'),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField(
+                                  "Minimum Quantity", country, 'minQuantity'),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField("Cost Per Weight",
+                                  country, 'costPerWeightMin'),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField(
+                                  "Maximum Quantity", country, 'maxQuantity'),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField("Cost Per Weight",
+                                  country, 'costPerWeightMax'),
+                              SizedBox(height: 10),
+                              SizedBox(height: 5),
+                              _buildExportPricingTextField(
+                                  "Cost per Weight for Above Max Quantity",
+                                  country,
+                                  'costPerWeightMax'),
+                              SizedBox(height: 10),
+                              Text(
+                                "Total Cost: ${countryPricing[country]?['totalCost'] ?? '0'}",
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16)),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text:
-                                      countryPricing[country]!['insuranceCost']
-                                          .toString()),
-                              "Insurance Cost ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]!['portCost']
-                                      .toString()),
-                              "Port Cost ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]!['minQuantity']
-                                      .toString()),
-                              "Minimum Quantity ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]![
-                                          'costPerWeightMin']
-                                      .toString()),
-                              "Cost per Weight for Min Quantity ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]!['maxQuantity']
-                                      .toString()),
-                              "Maximum Quantity ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]![
-                                          'costPerWeightMax']
-                                      .toString()),
-                              "Cost per Weight for Max Quantity ($country)",
-                            ),
-                            SizedBox(height: 15),
-                            _buildTextField(
-                              TextEditingController(
-                                  text: countryPricing[country]![
-                                          'costPerWeightAboveMax']
-                                      .toString()),
-                              "Cost per Weight for Above Max Quantity ($country)",
-                            ),
-                            Text(
-                                "Total Cost for Exporting to $country : ${countryPricing[country]?['totalCost'] ?? '0.00'}",
-                                style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green)),
-                            SizedBox(height: 15),
-                          ],
-                        );
-                      }).toList(),
+                                    color: Colors.green),
+                              ),
+                              Divider(),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ],
+
                     SizedBox(height: 20),
 
                     _isUploading
