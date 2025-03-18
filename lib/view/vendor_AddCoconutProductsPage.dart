@@ -18,17 +18,29 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _companyController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _stockController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   // Subscription Controllers
-  final TextEditingController _subscriptionPriceController =
-      TextEditingController();
-  final TextEditingController _subscriptionQuantityController =
-      TextEditingController();
-  final TextEditingController _subscriptionDurationController =
-      TextEditingController();
-  final TextEditingController _deliveryFrequencyController =
-      TextEditingController();
+  // final TextEditingController _subscriptionPriceController =
+  //     TextEditingController();
+  // final TextEditingController _subscriptionQuantityController =
+  //     TextEditingController();
+  // final TextEditingController _subscriptionDurationController =
+  //     TextEditingController();
+  // final TextEditingController _deliveryFrequencyController =
+  //     TextEditingController();
+
+  final TextEditingController _sixMonthPriceController = TextEditingController();
+  final TextEditingController _sixMonthQuantityController = TextEditingController();
+  final TextEditingController _sixMonthDescriptionController =TextEditingController();
+  String? _sixMonthDeliveryFrequency;
+
+  final TextEditingController _oneYearPriceController = TextEditingController();
+  final TextEditingController _oneYearQuantityController = TextEditingController();
+  final TextEditingController _oneYearDescriptionController=TextEditingController();
+  String? _oneYearDeliveryFrequency;
+
 
   // Exporting Controllers
   final TextEditingController _exportQuantityController =
@@ -50,6 +62,8 @@ class _AddProductPageState extends State<AddProductPage> {
   bool _isSubscription = false;
   bool _isExporting = false;
   Map<String, Map<String, dynamic>> countryPricing = {};
+  bool _isSixMonthsSelected = false;
+  bool _isOneYearSelected = false;
 
   String? _subscriptionDuration;
   String? _deliveryFrequency;
@@ -60,6 +74,16 @@ class _AddProductPageState extends State<AddProductPage> {
     "Start of each Month",
     "Start of each Month and Mid-Month"
   ];
+
+  @override
+  void dispose() {
+    _sixMonthPriceController.dispose();
+    _sixMonthQuantityController.dispose();
+    _oneYearPriceController.dispose();
+    _oneYearQuantityController.dispose();
+    super.dispose();
+  }
+
   final List<String> _exportCountries = [
     "UAE",
     "USA",
@@ -205,20 +229,33 @@ class _AddProductPageState extends State<AddProductPage> {
               .set(exportData);
         }
       }
-
       if (_isSubscription) {
         Map<String, dynamic> subscriptionData = {
-          "subscriptionPrice":
-              double.tryParse(_subscriptionPriceController.text) ?? 0.0,
-          "subscriptionQuantity":
-              int.tryParse(_subscriptionQuantityController.text) ?? 0,
-          "subscriptionDuration": _subscriptionDuration,
-          "deliveryFrequency": _deliveryFrequency,
           "createdAt": FieldValue.serverTimestamp(),
         };
 
+        // ✅ If 6 months subscription is selected, add its details
+        if (_isSixMonthsSelected) {
+          subscriptionData["sixMonths"] = {
+            "price": double.tryParse(_sixMonthPriceController.text) ?? 0.0,
+            "quantity": _sixMonthQuantityController.text ?? "",
+            "deliveryFrequency": _sixMonthDeliveryFrequency ?? "",
+          };
+        }
+
+        // ✅ If 1 year subscription is selected, add its details
+        if (_isOneYearSelected) {
+          subscriptionData["oneYear"] = {
+            "price": double.tryParse(_oneYearPriceController.text) ?? 0.0,
+            "quantity": _oneYearQuantityController.text ?? "",
+            "deliveryFrequency": _oneYearDeliveryFrequency ?? "",
+          };
+        }
+
+        // ✅ Upload data to Firestore
         await productRef.collection("subscriptionData").add(subscriptionData);
       }
+
 
       setState(() {
         _isUploading = false;
@@ -321,53 +358,91 @@ class _AddProductPageState extends State<AddProductPage> {
                     SizedBox(height: 10),
                     _buildTextField(_priceController, "Price"),
                     SizedBox(height: 10),
+                    _buildTextField(_stockController, "stock"),
+                    SizedBox(height: 10),
                     _buildTextField(
                         _descriptionController, "Description about Product",
                         maxLines: 5),
+                    SizedBox(height: 10),
+                  Divider(thickness: 10,color: Colors.grey,),
+                    SizedBox(height: 10),
+
 
                     // ✅ Subscription Checkbox
                     CheckboxListTile(
                       title: Text("Subscription Available"),
                       value: _isSubscription,
-                      onChanged: (value) =>
-                          setState(() => _isSubscription = value!),
+                      onChanged: (value) => setState(() => _isSubscription = value!),
                     ),
 
                     if (_isSubscription) ...[
-                      DropdownButtonFormField<String>(
-                        value: _subscriptionDuration,
-                        decoration:
-                            InputDecoration(labelText: "Subscription Duration"),
-                        items: _subscriptionDurations.map((duration) {
-                          return DropdownMenuItem(
-                              value: duration, child: Text(duration));
-                        }).toList(),
+                      Text("Select Subscription Duration", style: TextStyle(fontWeight: FontWeight.bold)),
+
+                      // ✅ 6 Months Checkbox
+                      CheckboxListTile(
+                        title: Text("6 Months"),
+                        value: _isSixMonthsSelected,
                         onChanged: (value) {
                           setState(() {
-                            _subscriptionDuration =
-                                value; // ✅ Ensure value is updated
+                            _isSixMonthsSelected = value!;
                           });
                         },
                       ),
-                      SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        value: _deliveryFrequency,
-                        decoration:
-                            InputDecoration(labelText: "Delivery Frequency"),
-                        items: _deliveryFrequencies.map((frequency) {
-                          return DropdownMenuItem(
-                              value: frequency, child: Text(frequency));
-                        }).toList(),
-                        onChanged: (value) =>
-                            setState(() => _deliveryFrequency = value),
+
+                      if (_isSixMonthsSelected) ...[
+                        _buildTextField(_sixMonthPriceController, "Price for 6 Months"),
+                        SizedBox(height: 5),
+                        _buildTextField(_sixMonthQuantityController, "Quantity for 6 Months"),
+                        SizedBox(height: 5),
+                        _buildTextField(_sixMonthDescriptionController, "Details About  6 Months plan",maxLines: 5),
+                        SizedBox(height: 5),
+                        DropdownButtonFormField<String>(
+                          value: _sixMonthDeliveryFrequency,
+                          decoration: InputDecoration(labelText: "Delivery Frequency for 6 Months"),
+                          items: _deliveryFrequencies.map((frequency) {
+                            return DropdownMenuItem(value: frequency, child: Text(frequency));
+                          }).toList(),
+                          onChanged: (value) => setState(() => _sixMonthDeliveryFrequency = value),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+
+                      // ✅ 1 Year Checkbox
+                      CheckboxListTile(
+                        title: Text("1 Year"),
+                        value: _isOneYearSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            _isOneYearSelected = value!;
+                          });
+                        },
                       ),
-                      SizedBox(height: 10),
-                      _buildTextField(
-                          _subscriptionPriceController, "Subscription Price"),
-                      SizedBox(height: 10),
-                      _buildTextField(_subscriptionQuantityController,
-                          "Subscription Quantity"),
+
+                      if (_isOneYearSelected) ...[
+                        _buildTextField(_oneYearPriceController, "Price for 1 Year"),
+                        SizedBox(height: 5),
+                        _buildTextField(_oneYearQuantityController, "Quantity for 1 Year"),
+                        SizedBox(height: 5),
+                        _buildTextField(_oneYearDescriptionController, "Details About 1 Year plan",maxLines: 5),
+                        SizedBox(height: 5),
+                        DropdownButtonFormField<String>(
+                          value: _oneYearDeliveryFrequency,
+                          decoration: InputDecoration(labelText: "Delivery Frequency for 1 Year"),
+                          items: _deliveryFrequencies.map((frequency) {
+                            return DropdownMenuItem(value: frequency, child: Text(frequency));
+                          }).toList(),
+                          onChanged: (value) => setState(() => _oneYearDeliveryFrequency = value),
+                        ),
+                        SizedBox(height: 10),
+                      ],
                     ],
+
+
+                    SizedBox(height: 10),
+                    Divider(thickness: 10,color: Colors.grey,),
+                    SizedBox(height: 10),
+
+
 
                     CheckboxListTile(
                       title: Text("Exporting Available"),

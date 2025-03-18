@@ -64,7 +64,9 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           name = userModel.name;
           email = userModel.email;
-          profileImage = userModel.profileImage;
+          profileImage = userModel.profileImage.isNotEmpty
+              ? userModel.profileImage
+              : "assets/default_avatar.png";
           isVendor = userModel.isVendor ?? false;
           isWorker = userModel.isWorker ?? false;
         });
@@ -161,6 +163,9 @@ class _ProfilePageState extends State<ProfilePage> {
       productCategory = vendorData['productCategory'] ?? '';
     });
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {

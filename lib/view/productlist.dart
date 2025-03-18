@@ -117,21 +117,26 @@ class _ProductDetailState extends State<ProductDetail> {
     try {
       QuerySnapshot subscriptionSnapshot = await FirebaseFirestore.instance
           .collection('products')
-          .doc(widget.productId)
+          .doc(widget.productId) // Ensure this is a valid product ID
           .collection('subscriptionData')
           .get();
 
       if (subscriptionSnapshot.docs.isNotEmpty) {
         List<Map<String, dynamic>> subscriptionDetails =
-            subscriptionSnapshot.docs.map((doc) {
-          return doc.data() as Map<String, dynamic>;
+        subscriptionSnapshot.docs.map((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          print("Fetched Plan: $data"); // Debugging line
+          return data;
         }).toList();
 
         setState(() {
-          productData?['subscriptionDetails'] = subscriptionDetails;
+          productData = {
+            ...?productData,
+            'subscriptionDetails': subscriptionDetails,
+          };
         });
 
-        print("Subscription Details: $subscriptionDetails");
+        print("Updated Product Data: $productData");
       } else {
         print("No subscription details found");
       }
@@ -139,6 +144,7 @@ class _ProductDetailState extends State<ProductDetail> {
       print("Error fetching subscription details: $e");
     }
   }
+
 
   Future<void> fetchVendorDetails(String vendorId) async {
     print(vendorId);
@@ -604,37 +610,95 @@ class _ProductDetailState extends State<ProductDetail> {
                   SizedBox(height: 10),
 
                   // Subscription Card (Only visible if isSubscription is true)
-                  if (productData?['isSubscription'] == true)
+                  if (productData?['isSubscription'] == true || showSubscriptionCard)
                     Card(
-                      color: Colors.green,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                      color: Color(0xFF033015),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       child: Padding(
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "Subscription Plans",
                               style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
+                                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
-                            SizedBox(height: 5),
+                            SizedBox(height: 10),
                             if (productData?['subscriptionDetails'] != null)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: productData!['subscriptionDetails']
-                                    .map<Widget>((plan) => Text(
-                                          "${plan['duration']} - ₹${plan['price']}",
-                                          style: TextStyle(color: Colors.white),
-                                        ))
+                                    .map<Widget>((plan) => Row(
+                                  children: [
+                                    Radio(
+                                      value: plan['duration'],
+                                      groupValue: selectedPlan,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedPlan = value.toString();
+                                          price = plan['price'];
+                                          quantity = plan['quantity'] ?? 1;
+                                          updatePrice();
+                                        });
+                                      },
+                                    ),
+                                    Text(
+                                      "${plan['duration']} - ₹${plan['price']}",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ))
                                     .toList(),
                               )
                             else
                               Text("No subscription plans available",
                                   style: TextStyle(color: Colors.white70)),
+                            SizedBox(height: 10),
+                            if (selectedPlan != null)
+                              Column(
+                                children: [
+                                  Text(
+                                    'Price: ₹$price',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
+                                  Text(
+                                    'Quantity: $quantity',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
+                                  SizedBox(height: 20),
+                                  Card(
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10)),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            '$selectedPlan Subscription Plan',
+                                            style: TextStyle(
+                                                fontSize: 16, fontWeight: FontWeight.bold),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            selectedPlan == '1 Year'
+                                                ? 'With the 1-year subscription plan, enjoy the product benefits for a full year at a discounted price.'
+                                                : 'The 6-month plan offers flexibility with a lower commitment, perfect for those seeking shorter-term access to the product.',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
