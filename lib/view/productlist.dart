@@ -23,6 +23,7 @@ class _ProductDetailState extends State<ProductDetail> {
   List<Map<String, dynamic>> products = [];
   String? userId = FirebaseAuth.instance.currentUser?.uid; // Get logged-in user
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? selectedCountry;
 
   // Flags to toggle visibility of containers
   bool showExportDetails = false;
@@ -435,107 +436,170 @@ class _ProductDetailState extends State<ProductDetail> {
                   SizedBox(height: 20),
 
                   if (productData?['isExporting'] == true)
-                    Stack(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Card(
-                                color: Color(0xFF033015),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(30),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Exporting Details",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                        // Dropdown for selecting country
+                        Card(
+
+                          color: Colors.grey,
+                          elevation: 4,
+                          margin: EdgeInsets.all(10),
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (productData?['isExporting'] == true &&
+                                    productData?['exportingDetails'] != null &&
+                                    productData!['exportingDetails'].isNotEmpty) ...[
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        WidgetSpan(
+                                          child: Icon(Icons.flight_takeoff, color: Colors.black, size: 20),
                                         ),
-                                      ),
-                                      SizedBox(height: 5),
-                                      if (productData?['exportingDetails'] !=
-                                          null)
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children:
-                                              productData!['exportingDetails']
-                                                  .map<Widget>((export) {
-                                            var pricing = export['exportPricing'];
-                                            return Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text("${export['country']}:",
-                                                    style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                                SizedBox(height: 3),
-                                                GestureDetector(
-                                                  onTap: () {},
-                                                  child: Container(
-                                                    color: Colors.white,
-                                                    width: 230,
-                                                    height:40,
-                                                    child: Center(
-                                                      child: Text(
-                                                          "Min Quantity: ${pricing['minQuantity']} - Cost: ${pricing['costPerWeightMin']}",
-                                                          style: TextStyle(
-                                                              color: Colors.black)),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8),
-                                                GestureDetector(
-                                                  onTap: () {},
-                                                  child: Container(
-                                                    color: Colors.white,
-                                                    width: 230,
-                                                    height:40,
-                                                    child: Center(
-                                                      child: Text(
-                                                          "Max Quantity: ${pricing['maxQuantity']} - Cost: ${pricing['costPerWeightMax']}",
-                                                          style: TextStyle(
-                                                              color: Colors.black)),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Text(
-                                                    "Insurance Cost: ${pricing['insuranceCost']}",
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                                Text(
-                                                    "Port Cost: ${pricing['portCost']}",
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                                SizedBox(height: 8),
-                                              ],
-                                            );
-                                          }).toList(),
-                                        )
-                                      else
-                                        Text(
-                                          "No exporting details available",
-                                          style: TextStyle(color: Colors.white70),
+                                        TextSpan(
+                                          text: " --- Select Shipping Destination ---",
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                                         ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
+                                  SizedBox(height: 8),
+                                  DropdownButton<String>(
+                                    value: selectedCountry,
+                                    hint: Text("Choose  Destination"),
+                                    isExpanded: true,
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        selectedCountry = newValue;
+                                      });
+                                    },
+                                    items: productData!['exportingDetails']
+                                        .map<DropdownMenuItem<String>>((export) => DropdownMenuItem<String>(
+                                      value: export['country'],
+                                      child: Text(export['country']),
+                                    ))
+                                        .toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ),
+
+                        Stack(
+                          children: [
+                            Center(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Card(
+                                    color: Color(0xFF033015),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(45),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Exporting Details",
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Divider(thickness: 2,color: Colors.grey,),
+
+                                          // If no country is selected, show a general export message
+                                          if (selectedCountry == null)
+                                            Center(
+                                              child: Text(
+                                                "This product can be exported.Select the desired destination ",
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold),
+                                              ),
+                                            )
+                                          // If a country is selected, show its details
+                                          else if (productData?['exportingDetails'] != null)
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: productData!['exportingDetails']
+                                                  .where((export) => export['country'] == selectedCountry)
+                                                  .map<Widget>((export) {
+                                                var pricing = export['exportPricing'];
+                                                return Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text("${export['country']}:",
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white)),
+                                                    SizedBox(height: 3),
+                                                    GestureDetector(
+                                                      onTap: () {},
+                                                      child: Container(
+                                                        color: Colors.white,
+                                                        width: 230,
+                                                        height: 40,
+                                                        child: Center(
+                                                          child: Text(
+                                                              "Min Quantity: ${pricing['minQuantity']} - Cost: ${pricing['costPerWeightMin']}",
+                                                              style: TextStyle(color: Colors.black)),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 8),
+                                                    GestureDetector(
+                                                      onTap: () {},
+                                                      child: Container(
+                                                        color: Colors.white,
+                                                        width: 230,
+                                                        height: 40,
+                                                        child: Center(
+                                                          child: Text(
+                                                              "Max Quantity: ${pricing['maxQuantity']} - Cost: ${pricing['costPerWeightMax']}",
+                                                              style: TextStyle(color: Colors.black)),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 9),
+                                                    Text("Insurance Cost: ${pricing['insuranceCost']}",
+                                                        style: TextStyle(color: Colors.white)),
+                                                    Text("Port Cost: ${pricing['portCost']}",
+                                                        style: TextStyle(color: Colors.white)),
+                                                    SizedBox(height: 8),
+                                                  ],
+                                                );
+                                              }).toList(),
+                                            )
+                                          else
+                                            Text(
+                                              "No exporting details available",
+                                              style: TextStyle(color: Colors.white70),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 10),
                       ],
                     ),
+
 
                   SizedBox(height: 10),
 
