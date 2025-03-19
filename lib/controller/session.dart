@@ -6,6 +6,7 @@ class Session {
   static const String _emailKey = 'email';
   static const String _uuidKey = 'uid';
   static const String _vvidkey = 'vid';
+  static const String _workerIdKey = 'workerId';
 
   static Future<void> saveSession(String email, String uuid) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -36,6 +37,19 @@ class Session {
     };
   }
 
+  // Save worker session
+  static Future<void> saveWorker(String workerId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_workerIdKey, workerId);
+  }
+
+  // Get worker session data
+  static Future<Map<String, String?>> getWorker() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return {
+      'workerId': prefs.getString(_workerIdKey),
+    };
+  }
   // Get user details from Firestore using email
   static Future<Map<String, dynamic>?> getUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -67,6 +81,7 @@ class Session {
     await prefs.remove(_emailKey);
     await prefs.remove(_uuidKey);
     await prefs.remove(_vvidkey);
+    await prefs.remove(_workerIdKey);
   }
 }
 

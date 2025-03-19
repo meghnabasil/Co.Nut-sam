@@ -24,6 +24,8 @@ class _ProductDetailState extends State<ProductDetail> {
   String? userId = FirebaseAuth.instance.currentUser?.uid; // Get logged-in user
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? selectedCountry;
+  String? selectedQuantityType;
+
 
   // Flags to toggle visibility of containers
   bool showExportDetails = false;
@@ -371,7 +373,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   GestureDetector(
                     onTap: () => showVendorDetailsPopup(),
                     child: Text(
-                      "Company: $vendorName",
+                      " $vendorName",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -382,50 +384,69 @@ class _ProductDetailState extends State<ProductDetail> {
 
                   SizedBox(height: 10),
 
-                  Text('₹${productData?['price'] ?? '0'}',
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF380230))),
-
-                  SizedBox(height: 10),
-
-                  // Export signal card
-                  Positioned(
-                    right: 10,
-                    top: 5,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 3, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF033015),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        'Exporting International',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-
                   Row(
                     children: [
-                      Text("Quantity: ", style: TextStyle(fontSize: 16)),
-                      IconButton(
-                        icon: Icon(Icons.remove),
-                        onPressed: () => setState(() =>
-                            quantity = quantity > 1 ? quantity - 1 : quantity),
+                      // Product Price on the left
+                      Text(
+                        '₹${productData?['price'] ?? '0'}',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF380230),
+                        ),
                       ),
-                      Text(quantity.toString(), style: TextStyle(fontSize: 16)),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () => setState(() => quantity++),
-                      ),
+
+                      Spacer(), // Pushes the icon to the right
+
+                      // Subscription Icon (Shown only if the product has a subscription)
+                      if (productData?['isSubscription'] == true)
+                        Tooltip(
+                          message: "This product Available for subscription",
+                          child: Icon(Icons.lock_clock, color: Colors.black, size: 40),
+                        ),
                     ],
                   ),
 
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
 
+
+                  // Export signal card
+                  if (productData?['exportingDetails'] != null && productData!['exportingDetails'].isNotEmpty)
+                    Positioned(
+                      right: 10,
+                      top: 5,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF033015),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          'Exporting International',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+
+                  // Row(
+                  //   children: [
+                  //     Text("Quantity: ", style: TextStyle(fontSize: 16)),
+                  //     IconButton(
+                  //       icon: Icon(Icons.remove),
+                  //       onPressed: () => setState(() =>
+                  //           quantity = quantity > 1 ? quantity - 1 : quantity),
+                  //     ),
+                  //     Text(quantity.toString(), style: TextStyle(fontSize: 16)),
+                  //     IconButton(
+                  //       icon: Icon(Icons.add),
+                  //       onPressed: () => setState(() => quantity++),
+                  //     ),
+                  //   ],
+                  // ),
+                  //
+                  // SizedBox(height: 20),
+                  SizedBox(height: 10),
                   Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
@@ -439,7 +460,39 @@ class _ProductDetailState extends State<ProductDetail> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 50),
+
+                  Center(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed:
+                            addToCart, // Call the addToCart function here
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800],
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text('Add to Cart'),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF033015),
+                                foregroundColor: Colors.white),
+                            child: Text('Buy'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 50),
+
 
                   if (productData?['isExporting'] == true)
                     Column(
@@ -495,6 +548,8 @@ class _ProductDetailState extends State<ProductDetail> {
                           ),
                         ),
 
+                        // Exporting Details
+                        // Exporting Details
                         Stack(
                           children: [
                             Center(
@@ -520,20 +575,15 @@ class _ProductDetailState extends State<ProductDetail> {
                                             ),
                                           ),
                                           SizedBox(height: 5),
-                                          Divider(thickness: 2,color: Colors.grey,),
+                                          Divider(thickness: 2, color: Colors.grey),
 
-                                          // If no country is selected, show a general export message
                                           if (selectedCountry == null)
                                             Center(
                                               child: Text(
-                                                "This product can be exported.Select the desired destination ",
-                                                style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold),
+                                                "This product can be exported. Select the desired destination",
+                                                style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
                                               ),
                                             )
-                                          // If a country is selected, show its details
                                           else if (productData?['exportingDetails'] != null)
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,48 +591,124 @@ class _ProductDetailState extends State<ProductDetail> {
                                                   .where((export) => export['country'] == selectedCountry)
                                                   .map<Widget>((export) {
                                                 var pricing = export['exportPricing'];
+                                                var minQuan=pricing['minQuantity'];
+                                                var mxQuan=pricing['maxQuantity'];
+                                                var minPrice=pricing['costPerWeightMin'];
+                                                var maxPrice=pricing['costPerWeightMax'];
                                                 return Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text("${export['country']}:",
-                                                        style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: Colors.white)),
+                                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                                                     SizedBox(height: 3),
-                                                    GestureDetector(
-                                                      onTap: () {},
-                                                      child: Container(
-                                                        color: Colors.white,
-                                                        width: 230,
-                                                        height: 40,
-                                                        child: Center(
-                                                          child: Text(
-                                                              "Min Quantity: ${pricing['minQuantity']} - Cost: ${pricing['costPerWeightMin']}",
-                                                              style: TextStyle(color: Colors.black)),
-                                                        ),
+
+                                                    // Min Quantity Selection with White Background
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white, // White background
+                                                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black12, // Light shadow
+                                                            blurRadius: 4,
+                                                            spreadRadius: 2,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      padding: EdgeInsets.all(8),
+                                                      margin: EdgeInsets.symmetric(vertical: 5),
+                                                      child: Row(
+                                                        children: [
+                                                          Radio<String>(
+                                                            value: "minQuantity",
+                                                            groupValue: selectedQuantityType,
+                                                            onChanged: (String? value) {
+                                                              setState(() {
+                                                                selectedQuantityType = value;
+                                                              });
+                                                            },
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              "Min Quantity: $minQuan \n  Cost per Weight: $minPrice",
+                                                              style: TextStyle(color: Colors.black), // Text color black for visibility
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
-                                                    SizedBox(height: 8),
-                                                    GestureDetector(
-                                                      onTap: () {},
-                                                      child: Container(
-                                                        color: Colors.white,
-                                                        width: 230,
-                                                        height: 40,
-                                                        child: Center(
-                                                          child: Text(
-                                                              "Max Quantity: ${pricing['maxQuantity']} - Cost: ${pricing['costPerWeightMax']}",
-                                                              style: TextStyle(color: Colors.black)),
-                                                        ),
+
+                                                    // Max Quantity Selection with White Background
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white, // White background
+                                                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black12, // Light shadow
+                                                            blurRadius: 4,
+                                                            spreadRadius: 2,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      padding: EdgeInsets.all(8),
+                                                      margin: EdgeInsets.symmetric(vertical: 5),
+                                                      child: Row(
+                                                        children: [
+                                                          Radio<String>(
+                                                            value: "maxQuantity",
+                                                            groupValue: selectedQuantityType,
+                                                            onChanged: (String? value) {
+                                                              setState(() {
+                                                                selectedQuantityType = value;
+                                                              });
+                                                            },
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              "Max Quantity: $mxQuan \n Cost per Weight: $maxPrice",
+                                                              style: TextStyle(color: Colors.black), // Text color black for visibility
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
+
                                                     SizedBox(height: 9),
-                                                    Text("Insurance Cost: ${pricing['insuranceCost']}",
-                                                        style: TextStyle(color: Colors.white)),
-                                                    Text("Port Cost: ${pricing['portCost']}",
-                                                        style: TextStyle(color: Colors.white)),
+                                                    Text("Insurance Cost: ${pricing['insuranceCost']}", style: TextStyle(color: Colors.white)),
+                                                    Text("Port Cost: ${pricing['portCost']}", style: TextStyle(color: Colors.white)),
                                                     SizedBox(height: 8),
+
+                                                    // Select Button
+                                                    ElevatedButton(
+                                                      onPressed: selectedQuantityType != null
+                                                          ? () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) => AlertDialog(
+                                                            title: Text("Confirmation"),
+                                                            content: Text("Are you sure you need this product to export?"),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () => Navigator.pop(context),
+                                                                child: Text("Cancel"),
+                                                              ),
+                                                              ElevatedButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    SnackBar(content: Text("Product selected for export")),
+                                                                  );
+                                                                },
+                                                                child: Text("Confirm"),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }
+                                                          : null,
+                                                      child: Text("Select"),
+                                                    ),
                                                   ],
                                                 );
                                               }).toList(),
@@ -705,35 +831,6 @@ class _ProductDetailState extends State<ProductDetail> {
                     ),
                   SizedBox(height: 40),
 
-                  Center(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed:
-                                addToCart, // Call the addToCart function here
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF033015),
-                              foregroundColor: Colors.white,
-                            ),
-                            child: Text('Add to Cart'),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF033015),
-                                foregroundColor: Colors.white),
-                            child: Text('Buy'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
                   SizedBox(height: 50),
                 ],

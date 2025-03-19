@@ -1,99 +1,97 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-
-import 'chatdetailscreen.dart';
+import 'vendormessagescreen.dart';
 
 class ChatListScreen extends StatefulWidget {
   @override
   _ChatListScreenState createState() => _ChatListScreenState();
 }
+
 class _ChatListScreenState extends State<ChatListScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late String currentUserId;
+
   @override
   void initState() {
     super.initState();
     currentUserId = _auth.currentUser?.uid ?? "";
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chats")),
+      appBar: AppBar(title: const Text("Chats")),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection("chat_rooms").snapshots(),
+        stream: _firestore
+            .collection("chat_rooms")
+            .where("participants", arrayContains: currentUserId)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData) {
-            print("Snapshot has no data");
-            return Center(child: Text("No chats available"));
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
           }
-          if (snapshot.data!.docs.isEmpty) {
-            print("Fetched chat_rooms collection but found no documents");
-            return Center(child: Text("No chats available"));
-          }
-          for (var doc in snapshot.data!.docs) {
-            print("Chat Room Found: ${doc.id}");
-          }
+
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text("No chats available"));
+            return const Center(child: Text("No chats available"));
           }
-          var chatRooms = snapshot.data!.docs.where((doc) {
-            // Check if the current user is part of the chat room
-            List<String> userIds = doc.id.split("_");
-            return userIds.contains(currentUserId);
-          }).toList();
-          if (chatRooms.isEmpty) {
-            return Center(child: Text("No active chats found"));
-          }
+
+          List<QueryDocumentSnapshot> chatRooms = snapshot.data!.docs;
+
           return ListView.builder(
             itemCount: chatRooms.length,
             itemBuilder: (context, index) {
               var chatRoom = chatRooms[index];
-              List<String> userIds = chatRoom.id.split("_");
-              String otherUserId =
-              userIds.firstWhere((id) => id != currentUserId);
-              return FutureBuilder<DocumentSnapshot>(
-                future: _firestore.collection("users").doc(otherUserId).get(),
+              List<String> participants = List<String>.from(chatRoom["participants"]);
+              String otherUserId = participants.firstWhere((id) => id != currentUserId, orElse: () => "");
+
+              if (otherUserId.isEmpty) return const SizedBox.shrink();
+
+              return FutureBuilder<DocumentSnapshot?>(
+                future: _getOtherUserData(otherUserId),
                 builder: (context, userSnapshot) {
-                  if (!userSnapshot.hasData) return SizedBox.shrink();
-                  var userData =
-                  userSnapshot.data!.data() as Map<String, dynamic>;
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink();
+                  }
+
+                  if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+                    return const SizedBox.shrink();
+                  }
+
+                  var userData = userSnapshot.data!.data() as Map<String, dynamic>;
                   String otherUserName = userData["name"] ?? "Unknown User";
-                  return StreamBuilder<QuerySnapshot>(
-                    stream: _firestore
-                        .collection("chat_rooms")
-                        .doc(chatRoom.id)
-                        .collection("messages")
-                        .orderBy("timestamp", descending: true)
-                        .limit(1)
-                        .snapshots(),
-                    builder: (context, messageSnapshot) {
-                      if (!messageSnapshot.hasData ||
-                          messageSnapshot.data!.docs.isEmpty) {
-                        return SizedBox.shrink(); // Hide empty chats
-                      }
-                      var lastMessage = messageSnapshot.data!.docs.first;
-                      String lastMessageText = lastMessage["message"];
-                      Timestamp lastMessageTime = lastMessage["timestamp"];
-                      return Card(
-                        child: ListTile(
-                          title: Text(otherUserName),
-                          subtitle: Text(lastMessageText),
-                          trailing: Text(_formatTimestamp(lastMessageTime)),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ChatScreen(otherUserId, otherUserName),
-                              ),
-                            );
-                          },
+
+                  return ListTile(
+                    title: Text(otherUserName),
+                    subtitle: StreamBuilder<QuerySnapshot>(
+                      stream: _firestore
+                          .collection("chat_rooms")
+                          .doc(chatRoom.id)
+                          .collection("messages")
+                          .orderBy("timestamp", descending: true)
+                          .limit(1)
+                          .snapshots(),
+                      builder: (context, messageSnapshot) {
+                        if (!messageSnapshot.hasData || messageSnapshot.data!.docs.isEmpty) {
+                          return const Text("No messages yet");
+                        }
+                        var lastMessage = messageSnapshot.data!.docs.first;
+                        return Text(lastMessage["message"] ?? "", maxLines: 1, overflow: TextOverflow.ellipsis);
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            vendorId: otherUserId,
+                            businessName: otherUserName,
+                          ),
                         ),
                       );
                     },
@@ -106,8 +104,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ),
     );
   }
-  String _formatTimestamp(Timestamp timestamp) {
-    DateTime date = timestamp.toDate();
-    return "${date.hour}:${date.minute}"; // Format as HH:MM
+
+  Future<DocumentSnapshot?> _getOtherUserData(String otherUserId) async {
+    var userDoc = await _firestore.collection("users").doc(otherUserId).get();
+    if (userDoc.exists) return userDoc;
+    var vendorDoc = await _firestore.collection("vendors").doc(otherUserId).get();
+    return vendorDoc.exists ? vendorDoc : null;
   }
 }

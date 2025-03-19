@@ -19,6 +19,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dup/controller/session.dart';
 
 import '../controller/videoWidget.dart';
+import 'Category.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -79,6 +80,16 @@ class _HomeState extends State<Home> {
     'asset/nut.jpg',
     'asset/nut.jpg',
     'asset/nut.jpg',
+  ];
+
+  final List<Map<String, dynamic>> categories = [
+    {'name': 'chutney powder', 'image': 'asset/chutny.jpg'},
+    {'name': 'Coconut', 'image':  'asset/coconut.jpg'},
+    {'name': 'Coconut powder', 'image': 'asset/coconut powder.jpg'},
+    {'name': 'Copra', 'image': 'asset/copra.png'},
+    {'name': 'Coconut Oil', 'image': 'asset/oil.jpg'},
+    {'name': 'Shell', 'image': 'asset/shell.jpg'},
+    {'name': 'Tender Coconut', 'image': 'asset/tender.jpg'},
   ];
 
   // List of banner images for PageView at top
@@ -290,32 +301,55 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 35),
-
-
-            // Company logos CarouselSlider
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: CarouselSlider(
                 options: CarouselOptions(
-                  height: 50,
+                  height: 100,
                   autoPlay: true,
                   autoPlayInterval: const Duration(seconds: 2),
                   viewportFraction: 0.3,
                   enlargeCenterPage: false,
                   scrollDirection: Axis.horizontal,
                 ),
-                items: companyLogos.map((logo) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(logo, height: 50, fit: BoxFit.cover),
+                items: categories.map((category) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryPage(
+                            categoryName: category['name'],
+                          ),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.asset(
+                              category['image']!,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 10), // Spacing between image and text
+                          Text(
+                            category['name']!,
+                            style: const TextStyle(fontSize: 12,fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 35),
+            const SizedBox(height: 20),
             const Text(
               "Go Natural. Go Co.Nut! 🥥",
               textAlign: TextAlign.center,

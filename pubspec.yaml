@@ -90,6 +90,13 @@ flutter:
      - asset/image.png
      - asset/banner.jpeg
      - asset/img.png
+     - asset/chutny.jpg
+     - asset/coconut.jpg
+     - asset/coconut powder.jpg
+     - asset/copra.png
+     - asset/oil.jpg
+     - asset/shell.jpg
+     - asset/tender.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

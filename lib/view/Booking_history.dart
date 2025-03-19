@@ -20,13 +20,29 @@ class BookingHistoryScreen extends StatelessWidget {
     });
   }
 
-  // Function to cancel the booking
-  Future<void> cancelBooking(String bookingId) async {
-    await FirebaseFirestore.instance
-        .collection('bookings')
-        .doc(bookingId)
-        .update({'status': 'Cancelled'});
+  // Function to cancel a booking (updates status instead of deleting)
+  Future<void> cancelBooking(BuildContext context, String bookingId) async {
+    try {
+      // Delete the booking from Firestore
+      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Your booking has been Cancelled successfully."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error deleting booking: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,39 +78,51 @@ class BookingHistoryScreen extends StatelessWidget {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                         ),
-                        if (booking.status != "Cancelled") // Show cancel only if not already cancelled
-                          GestureDetector(
-                            onTap: () {
-                              // Show confirmation dialog
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text("Cancel Booking"),
-                                  content: const Text("Are you sure you want to cancel this booking?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text("No"),
+                        if (booking.status != "Cancelled") // Show cancel button only if not already cancelled
+                          StatefulBuilder(
+                            builder: (context, setState) {
+                              bool isLoading = false;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text("Cancel Booking"),
+                                      content: isLoading
+                                          ? const Center(child: CircularProgressIndicator()) // Show loading
+                                          : const Text("Are you sure you want to cancel this booking?"),
+                                      actions: isLoading
+                                          ? []
+                                          : [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text("No"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            setState(() => isLoading = true);
+                                            await cancelBooking(context, booking.id);
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            "Yes",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    TextButton(
-                                      onPressed: () {
-                                        cancelBooking(booking.id);
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text("Yes", style: TextStyle(color: Colors.red)),
-                                    ),
-                                  ],
+                                  );
+                                },
+                                child: const Text(
+                                  "Cancel",
+                                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                                 ),
                               );
                             },
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                            ),
                           ),
                       ],
                     ),
-
                     const SizedBox(height: 10),
 
                     // Booking Details

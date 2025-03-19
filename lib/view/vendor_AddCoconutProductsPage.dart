@@ -95,9 +95,13 @@ class _AddProductPageState extends State<AddProductPage> {
   final List<String> _categories = [
     "Fresh Coconuts",
     "Coconut Oil",
+    "Coconut",
     "Tender Coconut",
     "Copra",
     "Copra cake",
+    "Coconut powder",
+    "chutney powder",
+    "Shell",
     "Coir Products",
     "Coconut-based Food Items",
     "Beauty & Health Products",

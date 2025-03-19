@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'EditWorkerProfie.dart';
+
 class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -164,6 +166,48 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void _confirmDelete(String workerId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Deletion"),
+          content: Text("Are you sure you want to delete this worker?"),
+          actions: [
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                Navigator.pop(context); // Close the dialog
+                await _deleteWorker(workerId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteWorker(String workerId) async {
+    try {
+      await FirebaseFirestore.instance.collection("workers").doc(workerId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Worker deleted successfully")),
+      );
+      setState(() {
+        isWorker = false; // Hide worker details
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to delete worker: $e")),
+      );
+    }
+  }
 
 
 
@@ -378,16 +422,44 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             IconButton(
                               icon: Icon(Icons.edit, color: Colors.white),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => AddWorkerScreen(
-                                          workerName:
-                                              workerName ?? "Default Name")),
-                                );
+                              onPressed: () async {
+                                Map<String, String?> workerData = await Session.getWorker();
+                                String? workerId = workerData['workerId']; // Correct key
+
+                                print("Retrieved Worker ID: $workerId"); // Debugging
+
+                                if (workerId != null && workerId.isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditWorkerProfile(workerId: workerId),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Worker ID not found! Please log in again.")),
+                                  );
+                                }
                               },
                             ),
+                            // Delete Icon
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                Map<String, String?> workerData = await Session.getWorker();
+                                String? workerId = workerData['workerId'];
+
+                                if (workerId != null && workerId.isNotEmpty) {
+                                  _confirmDelete(workerId);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Worker ID not found! Please log in again.")),
+                                  );
+                                }
+                              },
+                            ),
+
+
                           ],
                         ),
                         Divider(color: Colors.green, thickness: 1),
