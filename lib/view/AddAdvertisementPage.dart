@@ -169,7 +169,6 @@ class _AddAdvertisementPageState extends State<AddAdvertisementPage> {
         .get();
 
     if (existingDocs.docs.isNotEmpty) {
-      // Get the existing document ID
       docId = existingDocs.docs.first.id;
       Map<String, dynamic> existingData = existingDocs.docs.first.data() as Map<String, dynamic>;
 

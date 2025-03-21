@@ -4,6 +4,7 @@ import 'package:dup/view/Favourites.dart';
 import 'package:dup/view/Tools.dart';
 import 'package:dup/view/cart.dart';
 import 'package:dup/view/firstpage.dart';
+import 'package:dup/view/international.dart';
 import 'package:dup/view/login.dart';
 import 'package:dup/view/onDoorstep.dart';
 import 'package:dup/view/productlist.dart';
@@ -385,20 +386,34 @@ class _HomeState extends State<Home> {
             ],
 
             const SizedBox(height: 60),
-
+            //
+            // // Row of buttons
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //     children: [
+            //       _buildButton('Register as Worker', ProfilePage()),
+            //       _buildButton('Register as Seller', ProfilePage()),
+            //       //  _buildButton('Products', VendorDashboard()),
+            //     ],
+            //   ),
+            // ),
+            // const SizedBox(height: 60),
             // Row of buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildButton('Register as Worker', ProfilePage()),
-                  _buildButton('Register as Seller', ProfilePage()),
+                  _buildButton('Get It Globally', International()),
                   //  _buildButton('Products', VendorDashboard()),
                 ],
               ),
             ),
             const SizedBox(height: 60),
+
+
             // Subscribe now text
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.0),
@@ -477,13 +492,16 @@ class _HomeState extends State<Home> {
                         end: Alignment.bottomRight,
                       ),
                     ),
+
+
+
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
                         Icon(Icons.lock_clock, color: Colors.white, size: 30),
                         SizedBox(width: 10),
                         Text(
-                          'Subscribe Now',
+                          'Subscribe Now ',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -631,11 +649,11 @@ class _HomeState extends State<Home> {
           border: Border.all(color: const Color(0xFF033015), width: 2),
           borderRadius: BorderRadius.circular(40),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 100),
         child: Text(
           text,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
