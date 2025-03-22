@@ -117,8 +117,7 @@ class _ProductDisplayPageState extends State<ProductDisplayPage> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> product, String productId) {
-    // Ensure 'imageUrls' is a list and not empty
-    List<dynamic>? imageUrls = product['imageUrls'];
+    List<dynamic>? imageUrls = product['images'];
     List<String> imageList = [];
 
     if (imageUrls != null && imageUrls.isNotEmpty) {

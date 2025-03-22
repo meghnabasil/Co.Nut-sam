@@ -50,27 +50,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadUserProfile() async {
 
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    Map<String, String?> sessionData = await Session.getSession();
+    String? userId = sessionData['uid'];
+    print("UserID.......... $userId");
+    if (userId != null) {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection("users")
-          .doc(user.uid)
+          .doc(userId)
           .get();
 
       if (userDoc.exists) {
-        print("User Document Data: ${userDoc.data()}"); // Debugging
+        print("User Document Data: ${userDoc.data()}");
 
-        UserModel userModel =
-            UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
-
+        String? imageUrl = userDoc['userImage'];
+        print("Profile Image.:..... $imageUrl");
         setState(() {
-          name = userModel.name;
-          email = userModel.email;
-          profileImage = userModel.profileImage.isNotEmpty
-              ? userModel.profileImage
-              : "assets/default_avatar.png";
-          isVendor = userModel.isVendor ?? false;
-          isWorker = userModel.isWorker ?? false;
+          name = userDoc['name'];
+          print("Name.... $name");
+          email = userDoc['email'];
+          profileImage = imageUrl!;
+          isVendor = userDoc['isVendor'] ?? false;
+          isWorker = userDoc['isWorker'] ?? false;
         });
         print('Is Vendor: $isVendor');
 

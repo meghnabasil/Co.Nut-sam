@@ -28,7 +28,7 @@ class _VendorDashboardState extends State<VendorDashboard> {
   String? vendorId;
   String vendorName = "Vendor Name";
   String vendorEmail = "vendor@example.com";
-  String vendorLogo = "assets/profile.jpg"; // Default image
+  String vendorLogo = "asset/banner.jpeg"; // Default image
 
   @override
   void initState() {
@@ -76,9 +76,9 @@ class _VendorDashboardState extends State<VendorDashboard> {
   }
 
   final List<String> carouselImages = [
-    'assets/banner1.jpg',
-    'assets/banner2.jpg',
-    'assets/banner3.jpg',
+    'asset/banner.jpeg',
+    'asset/banner.jpeg',
+    'asset/banner.jpeg',
   ];
 
   @override

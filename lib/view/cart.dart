@@ -1,7 +1,5 @@
+import 'package:dup/view/shipping_address.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../controller/cart_contoller.dart';
 import '../model/cart_model.dart';
 
@@ -59,180 +57,211 @@ class _CartState extends State<Cart> {
 
   @override
   Widget build(BuildContext context) {
-    double maxTotal = 1000.0; // Example maximum total for filling the bar
+    double maxTotal = 1000.0;
 
-    double subtotal = cartItems.fold(0.0, (prev, item) => prev + item.price * item.quantity);
+    double subtotal =
+        cartItems.fold(0.0, (prev, item) => prev + item.price * item.quantity);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Cart',style: TextStyle(color: Colors.white),),
+        title: Text(
+          'My Cart',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Color(0xFF033015),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: cartItems.isEmpty
           ? Center(child: Text("Your cart is empty"))
           : Column(
-        children: [
-          // Subtotal Bar with Linear Progress Indicator
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-            color: Color(0xFFE0E0E0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Linear Progress Bar
+                // Subtotal Bar with Linear Progress Indicator
                 Container(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  height: 10.0,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: LinearProgressIndicator(
-                    value: (subtotal + deliveryFee) / maxTotal,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                  ),
-                ),
-                // Subtotal Text
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Subtotal:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '₹${subtotal.toInt()}',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-          // Cart Items List
-          Expanded(
-            child: ListView.builder(
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                CartItem cartItem = cartItems[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(10),
-                    leading: cartItem.imageUrl.isNotEmpty
-                        ? Image.network(
-                      cartItem.imageUrl,
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
-                    )
-                        : Icon(Icons.image_not_supported, size: 50),
-                    title: Text(
-                      cartItem.productName,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('₹${cartItem.price} x Quantity: ${cartItem.quantity}'),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.remove),
-                              onPressed: () {
-                                if (cartItem.quantity > 1) {
-                                  updateQuantity(cartItem, cartItem.quantity - 1);
-                                }
-                              },
-                            ),
-                            Text(cartItem.quantity.toString()),
-                            IconButton(
-                              icon: Icon(Icons.add),
-                              onPressed: () {
-                                updateQuantity(cartItem, cartItem.quantity + 1);
-                              },
-                            ),
-                          ],
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                  color: Color(0xFFE0E0E0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Linear Progress Bar
+                      Container(
+                        margin:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        height: 10.0,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                      ],
+                        child: LinearProgressIndicator(
+                          value: (subtotal + deliveryFee) / maxTotal,
+                          backgroundColor: Colors.grey[300],
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.green),
+                        ),
+                      ),
+                      // Subtotal Text
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Subtotal:',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '₹${subtotal.toInt()}',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Cart Items List
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      CartItem cartItem = cartItems[index];
+                      return Card(
+                        margin:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.all(10),
+                          leading: cartItem.imageUrl.isNotEmpty
+                              ? Image.network(
+                                  cartItem.imageUrl,
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(Icons.image_not_supported, size: 50),
+                          title: Text(
+                            cartItem.productName,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  '₹${cartItem.price} x Quantity: ${cartItem.quantity}'),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.remove),
+                                    onPressed: () {
+                                      if (cartItem.quantity > 1) {
+                                        updateQuantity(
+                                            cartItem, cartItem.quantity - 1);
+                                      }
+                                    },
+                                  ),
+                                  Text(cartItem.quantity.toString()),
+                                  IconButton(
+                                    icon: Icon(Icons.add),
+                                    onPressed: () {
+                                      updateQuantity(
+                                          cartItem, cartItem.quantity + 1);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => deleteCartItem(cartItem.productId),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // Order Summary Section
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Delivery Fee
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Delivery Fee:'),
+                          Text('₹$deliveryFee'),
+                        ],
+                      ),
+                      // Discount (if any)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Discount:'),
+                          Text('₹$discount'),
+                        ],
+                      ),
+                      Divider(),
+                      // Total
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Order Total:',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '₹$totalAmount',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Proceed to Buy Button
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+
+                      List<String> productIds = [];
+                      List<int> quantities = [];
+                      for (var cartItem in cartItems) {
+                        productIds.add(cartItem.productId);
+                        quantities.add(cartItem.quantity);
+                      }
+
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ShippingAddress(
+                              productIds: productIds,
+                              quantities: quantities,
+                              totalPrice: totalAmount,
+                            ),
+                          ));
+                      print("Proceeding to buy with total: ₹$totalAmount");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[900],
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 30),
+                      textStyle: TextStyle(fontSize: 18),
                     ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => deleteCartItem(cartItem.productId),
+                    child: Text(
+                      'Proceed to Buy',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Order Summary Section
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Delivery Fee
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Delivery Fee:'),
-                    Text('₹$deliveryFee'),
-                  ],
                 ),
-                // Discount (if any)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Discount:'),
-                    Text('₹$discount'),
-                  ],
-                ),
-                Divider(),
-                // Total
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Order Total:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '₹$totalAmount',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+                SizedBox(height: 30),
               ],
             ),
-          ),
-          // Proceed to Buy Button
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle proceed to buy logic (Navigate to checkout page)
-                print("Proceeding to buy with total: ₹$totalAmount");
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[900],
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 30),
-                textStyle: TextStyle(fontSize: 18),
-              ),
-              child: Text(
-                'Proceed to Buy',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ),
-          ),
-          SizedBox(height: 30),
-        ],
-      ),
     );
   }
 }

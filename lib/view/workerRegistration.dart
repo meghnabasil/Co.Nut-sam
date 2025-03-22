@@ -3,6 +3,7 @@ import '../controller/worker_controller.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   final String workerName;
+
   AddWorkerScreen({required this.workerName});
 
   @override
@@ -25,8 +26,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
     worker = widget.workerName;
   }
 
-
-  /// Save Worker Data
   Future<void> _saveWorker() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -55,14 +54,21 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Register as Woker",style: TextStyle(color: Colors.white),), backgroundColor: Color(0xFF033015),iconTheme: IconThemeData(color: Colors.white),
+      appBar: AppBar(
+        title: Text(
+          "Register as Woker",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Color(0xFF033015),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Card(
           elevation: 50,
           shadowColor: Colors.green,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Form(
@@ -74,12 +80,14 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                     decoration: InputDecoration(labelText: 'Worker Name'),
                     initialValue: worker,
                     readOnly: true,
-                    validator: (value) => value!.isEmpty ? "Enter worker name" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter worker name" : null,
                   ),
                   // Job Title
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Job Title'),
-                    validator: (value) => value!.isEmpty ? "Enter job title" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter job title" : null,
                     onSaved: (value) => jobTitle = value!,
                   ),
 
@@ -87,14 +95,17 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Phone Number'),
                     keyboardType: TextInputType.phone,
-                    validator: (value) => value!.length >= 10 ? null : "Enter a valid phone number",
+                    validator: (value) => value!.length >= 10
+                        ? null
+                        : "Enter a valid phone number",
                     onSaved: (value) => phone = value!,
                   ),
 
                   // City
                   TextFormField(
                     decoration: InputDecoration(labelText: 'City'),
-                    validator: (value) => value!.isEmpty ? "Enter city name" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter city name" : null,
                     onSaved: (value) => city = value!,
                   ),
 
@@ -102,7 +113,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   TextFormField(
                     decoration: InputDecoration(labelText: 'Description'),
                     maxLines: 4,
-                    validator: (value) => value!.isEmpty ? "Enter a description" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter a description" : null,
                     onSaved: (value) => description = value!,
                   ),
 
@@ -112,7 +124,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   ElevatedButton(
                     onPressed: _saveWorker,
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(const Color(0xFF033015)),
+                      backgroundColor:
+                          MaterialStateProperty.all(const Color(0xFF033015)),
                       foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     child: const Text('Register'),

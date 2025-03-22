@@ -4,7 +4,10 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 
+import '../controller/session.dart';
+
 class PaymentScreen extends StatefulWidget {
+  final Map<String, String> shippingAddress;
   final double totalPrice;
   final String productName;
   final String productId;
@@ -27,6 +30,7 @@ class PaymentScreen extends StatefulWidget {
     required this.costPerWeight,
     required this.insuranceCost,
     required this.portCost,
+    required this.shippingAddress,
 });
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -49,23 +53,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Payment Success: ${response.paymentId}')),
     );
+
+
+    final sessionData = await Session.getSession();
+    final userId = sessionData['uid'];
+
+
     final orderData = {
+      'userId': userId,
       'paymentId': response.paymentId,
       'amount': widget.totalPrice,
-      'email': widget.userEmail,
-      'phone': widget.userPhone,
-      'shippingAddress': {
-        'name': widget.userName,
-        'address': widget.userAddress,
-        'city': widget.userCity,
-        'state': widget.userState,
-        'zip': widget.userZip,
-        'country': widget.userCountry,
-      },
+      'productName': widget.productName,
+      'productId': widget.productId,
+      'vendorId': widget.vendorId,
+      'selectedDestination': widget.selectedDestination,
+      'selectedPlan': widget.selectedPlan,
+      'selectedQuantity': widget.selectedQuantity,
+      'costPerWeight': widget.costPerWeight,
+      'insuranceCost': widget.insuranceCost,
+      'portCost': widget.portCost,
+      'shippingAddress': widget.shippingAddress,
       'timestamp': FieldValue.serverTimestamp(),
     };
     try {
-      await FirebaseFirestore.instance.collection('orders').add(orderData);
+      await FirebaseFirestore.instance.collection('exportingOrders').add(orderData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order saved successfully!')),
 
@@ -91,10 +102,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
       SnackBar(content: Text('External Wallet: ${response.walletName}')),
     );
   }
+
   void _openRazorpay() {
     final options = {
       'key': 'rzp_test_zrejXWOWxRf29k',
-      'amount': int.parse(widget.shippingAddress['amount']!) * 100,
+      'amount': (widget.totalPrice * 100).toInt(),
       'currency': 'INR',
       'name': 'dup',
       'description': 'Payment for Order',
@@ -102,8 +114,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'contact': widget.shippingAddress['phone'],
         'email': widget.shippingAddress['email'],
       },
-      'notes': {'country': 'India'},
+      'method': {
+        'upi': true,
+        'card': true,
+        'netbanking': true,
+        'wallet': true,
+      },
+      'theme': {'color': '#3399cc'},
     };
+
     try {
       _razorpay.open(options);
     } catch (e) {
@@ -145,12 +164,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text('Name: ${shippingAddress['name']}'),
-                    Text('Address: ${shippingAddress['address']}'),
-                    Text('City: ${shippingAddress['city']}'),
-                    Text('State: ${shippingAddress['state']}'),
-                    Text('Zip: ${shippingAddress['zip']}'),
-                    Text('Country: ${shippingAddress['country']}'),
+                    Text('Name: ${shippingAddress['fullName'] ?? "N/A"}'),
+                    Text('Address: ${shippingAddress['addressLine1'] ?? "N/A"}'),
+                    Text('City: ${shippingAddress['city'] ?? "N/A"}'),
+                    Text('State: ${shippingAddress['state'] ?? "N/A"}'),
+                    Text('Zip: ${shippingAddress['postalCode'] ?? "N/A"}'),
+                    Text('Country: ${shippingAddress['country'] ?? "N/A"}'),
+
                   ],
                 ),
               ),
@@ -163,16 +183,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 16),
             ListTile(
                 title: const Text('Amount'),
-                subtitle: Text(' ${shippingAddress['amount']}'),
+                subtitle: Text('₹${widget.totalPrice.toStringAsFixed(2)}'),
             ),
             ListTile(
 
               title: const Text('Email'),
-              subtitle: Text(shippingAddress['email']!),
+              subtitle: Text(shippingAddress['Email']!),
             ),
             ListTile(
               title: const Text('Phone Number'),
-              subtitle: Text(shippingAddress['phone']!),
+              subtitle: Text(shippingAddress['phone']?? "N/A"),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

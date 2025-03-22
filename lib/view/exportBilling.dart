@@ -39,6 +39,7 @@ class _ExportBillingState extends State<ExportBilling> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   String? _quantityError;
   double _totalPrice = 0.0;
@@ -254,10 +255,20 @@ class _ExportBillingState extends State<ExportBilling> {
                     ),
                     SizedBox(height: 10),
                     TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: "Email",
+                        hintText: "Enter your email",
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
                       controller: _phoneController,
                       decoration: InputDecoration(
                         labelText: "Contact number",
-                        hintText: "Enter your address (optional)",
+                        hintText: "Enter your contact number",
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.phone,
@@ -342,8 +353,19 @@ class _ExportBillingState extends State<ExportBilling> {
             // Confirm Button
             Center(
               child: ElevatedButton(
-                onPressed: _quantityError == null
+                 onPressed: _quantityError == null
                     ? () {
+
+                  Map<String, String> shippingAddress = {
+                    "fullName": _nameController.text,
+                    "addressLine1": _addressLine1Controller.text,
+                    "phone": _phoneController.text,
+                    "Email":_emailController.text,
+                    "city": _cityController.text,
+                    "state": _stateController.text,
+                    "postalCode": _postalCodeController.text,
+                    "country": _countryController.text,
+                  };
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -357,7 +379,8 @@ class _ExportBillingState extends State<ExportBilling> {
                                 selectedQuantity: widget.selectedQuantity,
                                 costPerWeight: widget.costPerWeight,
                                 insuranceCost: widget.insuranceCost,
-                                portCost: widget.portCost,),
+                                portCost: widget.portCost,
+                                shippingAddress: shippingAddress,),
                             ));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Export confirmed!")),

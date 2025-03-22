@@ -488,10 +488,22 @@ class _ProductDetailState extends State<ProductDetail> {
                           width: 200,
                           child: ElevatedButton(
                             onPressed: () {
+
+                              List<String> productIds = [widget.productId]; // Single product ID
+                              List<int> quantities = [quantity]; // Current quantity
+
+                              // Calculate total price for the current product
+                              double totalPrice = (productData?['price'] ?? 0) * quantity;
+
+
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => ShippingAddress()),
+                                    builder: (context) => ShippingAddress(
+                                      productIds: productIds,
+                                      quantities: quantities,
+                                      totalPrice: totalPrice,
+                                    )),
                               );
                             },
                             style: ElevatedButton.styleFrom(

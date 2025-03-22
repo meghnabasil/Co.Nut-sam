@@ -8,7 +8,8 @@ class WorkerController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Register Worker with Existing User UID
-  Future<String?> registerWorker(String workerName, String jobTitle, String phone, String city, String description) async {
+  Future<String?> registerWorker(String workerName, String jobTitle,
+      String phone, String city, String description) async {
     try {
       // Get the currently logged-in user's UID
       User? user = _auth.currentUser;
@@ -34,7 +35,7 @@ class WorkerController {
         'isWorker': true,
       }, SetOptions(merge: true));
 
-      await Session.saveVendor(workerId);
+      await Session.saveWorker(workerId);
 
       return null;
     } on FirebaseAuthException catch (e) {
@@ -49,7 +50,8 @@ class WorkerController {
         return null;
       }
 
-      DocumentSnapshot workerDoc = await _firestore.collection("workers").doc(user.uid).get();
+      DocumentSnapshot workerDoc =
+          await _firestore.collection("workers").doc(user.uid).get();
 
       if (workerDoc.exists) {
         return Worker.fromMap(workerDoc.data() as Map<String, dynamic>);
@@ -61,5 +63,3 @@ class WorkerController {
     }
   }
 }
-
-

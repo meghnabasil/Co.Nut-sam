@@ -1,9 +1,19 @@
-import 'package:dup/view/payment.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 
 class ShippingAddress extends StatefulWidget {
-  const ShippingAddress({super.key});
+  final List<String> productIds;
+  final List<int> quantities;
+  final double totalPrice;
+
+  const ShippingAddress({
+    Key? key,
+    required this.productIds,
+    required this.quantities,
+    required this.totalPrice,
+  }) : super(key: key);
+
   @override
   State<ShippingAddress> createState() => _ShippingAddressState();
 }
@@ -15,9 +25,47 @@ class _ShippingAddressState extends State<ShippingAddress> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _zipController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+
+  List<Map<String, dynamic>> products = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProductDetails();
+  }
+
+  Future<void> fetchProductDetails() async {
+    try {
+      List<Map<String, dynamic>> productList = [];
+      for (String productId in widget.productIds) {
+        DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+            .collection('products')
+            .doc(productId)
+            .get();
+
+        if (productSnapshot.exists) {
+          productList.add({
+            'id': productId,
+            'name': productSnapshot['name'],
+            'price': productSnapshot['price'],
+            'imageUrl': productSnapshot['imageUrl'],
+          });
+        }
+      }
+
+      setState(() {
+        products = productList;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching product details: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -25,13 +73,12 @@ class _ShippingAddressState extends State<ShippingAddress> {
     _cityController.dispose();
     _stateController.dispose();
     _zipController.dispose();
-
     _countryController.dispose();
-    _amountController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text;
@@ -40,9 +87,9 @@ class _ShippingAddressState extends State<ShippingAddress> {
       final state = _stateController.text;
       final zip = _zipController.text;
       final country = _countryController.text;
-      final amount = _amountController.text;
       final email = _emailController.text;
       final phone = _phoneController.text;
+
       final shippingAddress = {
         'name': name,
         'address': address,
@@ -50,22 +97,17 @@ class _ShippingAddressState extends State<ShippingAddress> {
         'state': state,
         'zip': zip,
         'country': country,
-        'amount': amount,
+        'amount': widget.totalPrice,
         'email': email,
         'phone': phone,
       };
-    /*  Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PaymentScreen(shippingAddress: shippingAddress),
-        ),
-      );*/
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Shipping address saved successfully!')),
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,10 +115,61 @@ class _ShippingAddressState extends State<ShippingAddress> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-
           key: _formKey,
           child: ListView(
             children: [
+              // Product Summary Section
+              if (isLoading)
+                Center(child: CircularProgressIndicator())
+              else
+                Card(
+                  elevation: 4,
+                  margin: EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order Summary',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Divider(thickness: 2),
+                        ...products.map((product) {
+                          int index = products.indexOf(product);
+                          int quantity = widget.quantities[index];
+                          return ListTile(
+                            leading: product['imageUrl'] != null
+                                ? Image.network(
+                              product['imageUrl'],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                                : Icon(Icons.image_not_supported),
+                            title: Text(product['name']),
+                            subtitle: Text(
+                                'Quantity: $quantity\nPrice: ₹${product['price']}'),
+                          );
+                        }).toList(),
+                        Divider(thickness: 2),
+                        Text(
+                          'Total Price: ₹${widget.totalPrice}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Shipping Address Form
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -126,7 +219,6 @@ class _ShippingAddressState extends State<ShippingAddress> {
                   hintText: 'Enter your state',
                 ),
                 validator: (value) {
-
                   if (value == null || value.isEmpty) {
                     return 'Please enter your state';
                   }
@@ -160,26 +252,6 @@ class _ShippingAddressState extends State<ShippingAddress> {
                     return 'Please enter your country';
                   }
                   return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                  hintText: 'Enter amount in INR',
-                  prefixIcon: Icon(Icons.currency_rupee),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-
                 },
               ),
               const SizedBox(height: 16),

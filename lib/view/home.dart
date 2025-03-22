@@ -64,7 +64,10 @@ class _HomeState extends State<Home> {
       // Fetch user's isVendor status from Firestore
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       if (userId.isNotEmpty) {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
         if (userDoc.exists) {
           setState(() {
             _isVendor = userDoc['isVendor'] ?? false;
@@ -72,8 +75,6 @@ class _HomeState extends State<Home> {
         }
       }
     }
-
-
   }
 
   final List<String> companyLogos = [
@@ -85,7 +86,7 @@ class _HomeState extends State<Home> {
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'chutney powder', 'image': 'asset/chutny.jpg'},
-    {'name': 'Coconut', 'image':  'asset/coconut.jpg'},
+    {'name': 'Coconut', 'image': 'asset/coconut.jpg'},
     {'name': 'Coconut powder', 'image': 'asset/coconut powder.jpg'},
     {'name': 'Copra', 'image': 'asset/copra.png'},
     {'name': 'Coconut Oil', 'image': 'asset/oil.jpg'},
@@ -111,26 +112,27 @@ class _HomeState extends State<Home> {
     try {
       QuerySnapshot snapshot =
           await FirebaseFirestore.instance.collection('advertisements').get();
-
       List<Map<String, String>> imageAds = [];
       List<Map<String, String>> videoAds = [];
-
       for (var doc in snapshot.docs) {
-        String imageUrl = doc['imageUrl'] ?? '';
-        String videoUrl = doc['videoUrl'] ?? '';
-        String productId = doc['productId'] as String;
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        String imageUrl = data['imageUrl'] ?? '';
+        String videoUrl = data['videoUrl'] ?? '';
+        String productId = data['productId'] ?? '';
 
         if (imageUrl.isNotEmpty) {
-          imageAds.add({'imageUrl': imageUrl, 'productId': productId});
+          imageAds.add({'image': imageUrl, 'productId': productId});
         }
         if (videoUrl.isNotEmpty) {
-          videoAds.add({'videoUrl': videoUrl, 'productId': productId});
+          videoAds.add({'video': videoUrl, 'productId': productId});
         }
       }
-
       setState(() {
         imageAdvertisements = imageAds;
+        print("Image Advertisements: $imageAdvertisements");
         videoAdvertisements = videoAds;
+        print("Video Advertisements: $videoAdvertisements");
       });
     } catch (e) {
       print("Error fetching advertisements: $e");
@@ -203,12 +205,13 @@ class _HomeState extends State<Home> {
               title: const Text("Workers"),
               onTap: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                    builder: (context) => WorkersList(),),);
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WorkersList(),
+                  ),
+                );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.shopping_cart, color: Colors.black),
               title: const Text("Your Cart"),
@@ -216,10 +219,11 @@ class _HomeState extends State<Home> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Cart(),),);
+                    builder: (context) => Cart(),
+                  ),
+                );
               },
             ),
-
             if (_isVendor) // Show only if user is a vendor
               ListTile(
                 leading: const Icon(Icons.house, color: Colors.black),
@@ -233,13 +237,11 @@ class _HomeState extends State<Home> {
                   );
                 },
               ),
-            Divider(color: Colors.black, // Line color
-              thickness: 2,        // Line thickness
+            Divider(
+              color: Colors.black, // Line color
+              thickness: 2, // Line thickness
               height: 20,
             ),
-
-
-
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text("Log Out"),
@@ -337,10 +339,12 @@ class _HomeState extends State<Home> {
                               fit: BoxFit.cover,
                             ),
                           ),
-                          const SizedBox(height: 10), // Spacing between image and text
+                          const SizedBox(height: 10),
+                          // Spacing between image and text
                           Text(
                             category['name']!,
-                            style: const TextStyle(fontSize: 12,fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -362,16 +366,12 @@ class _HomeState extends State<Home> {
             ),
             const SizedBox(height: 35),
 
-
-
-
-
             if (videoAdvertisements.isNotEmpty) ...[
               SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
                   height: 200,
-                  autoPlay: false,  // Disable autoplay to give users control
+                  autoPlay: false,
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
                   viewportFraction: 0.9,
@@ -379,28 +379,14 @@ class _HomeState extends State<Home> {
                 items: videoAdvertisements.map((ad) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(13),
-                    child: ChewieVideoWidget(videoUrl: ad['videoUrl']!),
+                    child: ChewieVideoWidget(videoUrl: ad['video']!),
                   );
                 }).toList(),
               ),
             ],
 
             const SizedBox(height: 60),
-            //
-            // // Row of buttons
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            //   child: Row(
-            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //     children: [
-            //       _buildButton('Register as Worker', ProfilePage()),
-            //       _buildButton('Register as Seller', ProfilePage()),
-            //       //  _buildButton('Products', VendorDashboard()),
-            //     ],
-            //   ),
-            // ),
-            // const SizedBox(height: 60),
-            // Row of buttons
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
@@ -412,7 +398,6 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 60),
-
 
             // Subscribe now text
             const Padding(
@@ -442,7 +427,7 @@ class _HomeState extends State<Home> {
                   viewportFraction: 0.9,
                 ),
                 items: imageAdvertisements.map((ad) {
-                  String? productId= ad['productId'];
+                  String? productId = ad['productId'];
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -456,7 +441,7 @@ class _HomeState extends State<Home> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(13),
                       child: Image.network(
-                        ad['imageUrl']!,
+                        ad['image']!,
                         width: double.infinity,
                         fit: BoxFit.cover,
                       ),
@@ -492,9 +477,6 @@ class _HomeState extends State<Home> {
                         end: Alignment.bottomRight,
                       ),
                     ),
-
-
-
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [

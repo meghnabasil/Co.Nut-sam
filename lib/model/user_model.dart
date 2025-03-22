@@ -2,8 +2,8 @@ class UserModel {
   final String uid;
   final String name;
   final String email;
-  final String profileImage =
-      'https://firebasestorage.googleapis.com/v0/b/dup-a79d6.firebasestorage.app/o/user.jpg?alt=media&token=6cfb58c0-60cd-4a5d-b77c-b5a37f5dc1f8';
+  final String profileImage;
+
   final String password;
   final bool isVendor;
   final bool isWorker;
@@ -15,19 +15,19 @@ class UserModel {
     required this.password,
     this.isVendor = false,
     this.isWorker = false,
-    profileImage,
+   required this.profileImage,
   });
 
   // Convert UserModel to Map (for Firestore)
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
-      'name': name,
-      'email': email,
-      'password': password,
-      'isVendor': isVendor,
-      'isWorker': isWorker,
-      'userImage': profileImage,
+    'uid': uid,
+    'name': name,
+    'email': email,
+    'password': password,
+    'isVendor': isVendor,
+    'isWorker': isWorker,
+    'userImage': profileImage,
     };
   }
 

@@ -21,7 +21,7 @@ class _RegiState extends State<Regi> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
+String profileImage='https://firebasestorage.googleapis.com/v0/b/dup-a79d6.firebasestorage.app/o/user.jpg?alt=media&token=6cfb58c0-60cd-4a5d-b77c-b5a37f5dc1f8';
   @override
   void dispose() {
     // Dispose controllers to prevent memory leaks
@@ -38,6 +38,7 @@ class _RegiState extends State<Regi> {
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        profileImage
       );
 
       if (errorMessage == null) {

@@ -9,7 +9,7 @@ class AuthController {
 
   // Register User
   Future<String?> registerUser(
-      String name, String email, String password) async {
+      String name, String email, String password, String profileImage) async {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -22,6 +22,7 @@ class AuthController {
         name: name,
         email: email,
         password: password,
+        profileImage:profileImage ,
       );
 
       await _firestore.collection("users").doc(user.uid).set(user.toMap());
